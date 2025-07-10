@@ -1,15 +1,17 @@
 {
   "name": "envl",
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "changeset": "npx @changesets/cli"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },
   "peerDependencies": {
     "typescript": "^5"
   },
-  "workspaces": [],
   "dependencies": {
     "@changesets/cli": "^2.29.5"
-  }
+  },
+  "workspaces": []
 }
