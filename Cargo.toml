@@ -1,0 +1,16 @@
+[workspace]
+resolver = "3"
+members = [
+    "packages/envl-rs",
+    "packages/envl-core"
+]
+
+[workspace.package]
+repository = "https://github.com/ROBOTofficial/envl"
+license = "MIT"
+edition = "2021"
+rust-version = "1.75"
+
+[patch.crates-io]
+envl = { path = "packages/envl-rs" }
+envl-core = { path = "packages/envl-core" }

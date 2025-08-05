@@ -1,0 +1,13 @@
+[package]
+name = "envl-core"
+version = "0.1.0"
+repository.workspace = true
+license.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[lib]
+crate-type = ["rlib", "cdylib"]
+
+[dependencies]
+tokio = { version = "1.47.1", features = ["full"] }
