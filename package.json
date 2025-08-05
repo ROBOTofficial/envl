@@ -13,5 +13,7 @@
   "dependencies": {
     "@changesets/cli": "^2.29.5"
   },
-  "workspaces": []
+  "workspaces": [
+    "packages/envl-js"
+  ]
 }
