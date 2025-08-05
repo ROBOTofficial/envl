@@ -1,20 +1,29 @@
 {
-  "name": "@envljs/core",
-  "type": "module",
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "scripts": {
-    "build": "tsup",
-    "check": "tsc --noEmit"
-  },
-  "devDependencies": {
-    "@types/bun": "latest"
-  },
-  "peerDependencies": {
-    "typescript": "^5"
-  },
-  "dependencies": {
-    "tsup": "^8.5.0"
-  }
+    "name": "@envljs/core",
+    "type": "module",
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "scripts": {
+        "build": "tsup",
+        "format": "prettier --write .",
+        "lint": "prettier --check . && eslint .",
+        "check": "tsc --noEmit"
+    },
+    "devDependencies": {
+        "@types/bun": "latest"
+    },
+    "peerDependencies": {
+        "typescript": "^5"
+    },
+    "dependencies": {
+        "@eslint/compat": "^1.3.1",
+        "@eslint/js": "^9.32.0",
+        "eslint": "^9.32.0",
+        "eslint-config-prettier": "^10.1.8",
+        "globals": "^16.3.0",
+        "prettier": "^3.6.2",
+        "tsup": "^8.5.0",
+        "typescript-eslint": "^8.39.0"
+    }
 }

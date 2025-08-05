@@ -2,6 +2,8 @@
   "name": "envl",
   "type": "module",
   "scripts": {
+    "lint": "npm run lint --workspaces",
+    "format": "npm run format --workspaces",
     "changeset": "npx @changesets/cli"
   },
   "devDependencies": {
