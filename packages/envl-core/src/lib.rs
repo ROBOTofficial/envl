@@ -1,4 +1,5 @@
 pub mod token;
+pub mod parser;
 
 pub struct CApi {}
 
