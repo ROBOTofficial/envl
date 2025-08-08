@@ -1,6 +1,7 @@
 pub mod token;
 pub mod parser;
 pub mod lexer;
+pub mod stdlib;
 
 pub struct CApi {}
 
