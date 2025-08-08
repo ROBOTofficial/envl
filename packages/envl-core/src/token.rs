@@ -1,5 +1,5 @@
 #[derive(Clone, Debug, PartialEq)]
-pub enum Token {
+pub enum Tokens {
     Number(f64),
     String(String),
     If,

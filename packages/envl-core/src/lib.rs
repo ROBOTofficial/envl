@@ -3,6 +3,8 @@ pub mod parser;
 pub mod lexer;
 pub mod stdlib;
 
+pub use token::Tokens;
+
 pub struct CApi {}
 
 impl CApi {
