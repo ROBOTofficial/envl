@@ -2,7 +2,9 @@
 resolver = "3"
 members = [
     "packages/envl-rs",
-    "packages/envl-core"
+    "packages/envl-core",
+    "packages/envl-settings",
+    "packages/envl-vars"
 ]
 
 [workspace.package]

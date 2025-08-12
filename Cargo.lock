@@ -71,6 +71,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "envl-settings"
+version = "0.1.0"
+
+[[package]]
+name = "envl-vals"
+version = "0.1.0"
+
+[[package]]
 name = "gimli"
 version = "0.31.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
