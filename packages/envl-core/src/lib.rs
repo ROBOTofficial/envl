@@ -1,8 +1,6 @@
-pub mod token;
-pub mod parser;
 pub mod lexer;
-pub mod stdlib;
-pub mod setting;
+pub mod parser;
+pub mod token;
 
 pub use token::Tokens;
 

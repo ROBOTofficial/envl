@@ -6,5 +6,5 @@ pub enum Tokens {
     Then,
     Else,
     Try,
-    Catch
+    Catch,
 }
