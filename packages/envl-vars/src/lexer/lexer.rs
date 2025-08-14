@@ -1,4 +1,5 @@
 use crate::misc::{
+    num::is_num,
     position::Position,
     token::{Token, Value},
 };
@@ -114,8 +115,8 @@ impl Lexer {
     }
 
     fn get_consume_identifier(&self, token: String) -> Value {
-        if let Ok(n) = token.parse::<f64>() {
-            Value::Number(n)
+        if is_num(token.clone()) {
+            Value::Number(token.clone())
         } else if let Ok(b) = token.parse::<bool>() {
             Value::Bool(b)
         } else {
@@ -139,7 +140,7 @@ mod test {
         let expect_arr = vec![
             Value::Variable("variable".to_string()),
             Value::Equal,
-            Value::Number(12345.0),
+            Value::Number("12345".to_string()),
             Value::Semi,
         ];
         assert_eq!(tokens, expect_arr);
