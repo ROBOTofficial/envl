@@ -1,3 +1,4 @@
+#[derive(Debug, Clone)]
 pub struct Position {
     pub file_path: String,
     pub row: usize,
