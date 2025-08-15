@@ -64,7 +64,8 @@ impl Lexer {
                             position: position.clone(),
                         });
                     }
-                    in_quote = !in_quote
+                    in_quote = !in_quote;
+                    current_token.clear();
                 }
                 '\\' => {
                     is_escape = true;
