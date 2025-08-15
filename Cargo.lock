@@ -75,7 +75,7 @@ name = "envl-settings"
 version = "0.1.0"
 
 [[package]]
-name = "envl-vals"
+name = "envl-vars"
 version = "0.1.0"
 
 [[package]]

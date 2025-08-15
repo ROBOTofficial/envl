@@ -16,5 +16,7 @@ rust-version = "1.75"
 [patch.crates-io]
 envl = { path = "packages/envl-rs" }
 envl-core = { path = "packages/envl-core" }
+envl-vars = { path = "packages/envl-vars" }
+envl-settings = { path = "packages/envl-settings" }
 
 [workspace.lints.clippy]
