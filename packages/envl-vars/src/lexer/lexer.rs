@@ -15,7 +15,7 @@ impl Lexer {
     }
 
     pub fn generate(&self) -> Vec<Token> {
-        let mut tokens: Vec<Token> = vec![];
+        let mut tokens: Vec<Token> = Vec::new();
         let mut row = 1;
         let mut col = 0;
         let mut in_quote = false;
