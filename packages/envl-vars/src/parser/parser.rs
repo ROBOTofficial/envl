@@ -173,24 +173,73 @@ impl Parser {
 mod test {
     use crate::{
         lexer::lexer::Lexer,
-        misc::variable::{VariableValue, VariableWithoutPosition},
-        parser::parser::Parser,
+        misc::variable::{Variable, VariableValue, VariableWithoutPosition},
+        parser::parser::{Parser, ParserError},
     };
 
-    #[test]
-    pub fn parse_test() {
-        let lex = Lexer::new("test.envl".to_string(), "variable = 12345;".to_string());
+    fn gen_parsed_vars(code: String) -> Result<Vec<Variable>, ParserError> {
+        let lex = Lexer::new("test.envl".to_string(), code);
         let tokens = lex.generate();
         let parser = Parser::new(tokens);
-        let result = parser
-            .parse()
+        parser.parse()
+    }
+
+    fn gen_vars(code: String) -> Vec<VariableWithoutPosition> {
+        gen_parsed_vars(code)
             .unwrap()
             .iter()
             .map(|v| VariableWithoutPosition {
                 name: v.name.clone(),
                 value: v.value.clone(),
             })
-            .collect::<Vec<_>>();
+            .collect::<Vec<_>>()
+    }
+
+    #[test]
+    pub fn number_test() {
+        let result = gen_vars("variable = 12345;".to_string());
+        assert_eq!(
+            result,
+            vec![VariableWithoutPosition {
+                name: "variable".to_string(),
+                value: VariableValue::Number("12345".to_string())
+            }]
+        );
+    }
+
+    #[test]
+    pub fn string_test() {
+        let result = gen_vars("variable = \"12345\";".to_string());
+        assert_eq!(
+            result,
+            vec![VariableWithoutPosition {
+                name: "variable".to_string(),
+                value: VariableValue::String("12345".to_string())
+            }]
+        );
+    }
+
+    #[test]
+    pub fn bool_test() {
+        let result = gen_vars("variable = true; variable2 = false;".to_string());
+        assert_eq!(
+            result,
+            vec![
+                VariableWithoutPosition {
+                    name: "variable".to_string(),
+                    value: VariableValue::Bool(true)
+                },
+                VariableWithoutPosition {
+                    name: "variable2".to_string(),
+                    value: VariableValue::Bool(false)
+                }
+            ]
+        );
+    }
+
+    #[test]
+    pub fn comment_test() {
+        let result = gen_vars("variable = 12345; //this is a comment".to_string());
         assert_eq!(
             result,
             vec![VariableWithoutPosition {
