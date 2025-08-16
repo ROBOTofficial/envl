@@ -1,10 +1,17 @@
 use crate::{
-    envl_vars_error,
+    envl_vars_error_message,
     misc::{
+        position::Position,
         token::{Token, Value},
         variable::{Variable, VariableValue},
     },
 };
+
+#[derive(Debug)]
+pub struct ParserError {
+    pub message: String,
+    pub position: Position,
+}
 
 struct Var {
     pub name: Option<String>,
@@ -20,13 +27,14 @@ impl Parser {
         Self { tokens }
     }
 
-    pub fn parse(&self) -> Vec<Variable> {
+    pub fn parse(&self) -> Result<Vec<Variable>, ParserError> {
         let mut vars = Vec::new();
         let mut equal_used = false;
         let mut var = Var {
             name: None,
             value: None,
         };
+        let mut parser_error: Option<ParserError> = None;
 
         macro_rules! clear {
             () => {{
@@ -40,20 +48,22 @@ impl Parser {
 
         macro_rules! error {
             ($pos: ident) => {
-                envl_vars_error!(
+                let message = envl_vars_error_message!(
                     "The order must be variable name, equal sign, value, and semicolon.",
                     $pos
                 );
+                parser_error = Some(ParserError { message, $pos })
             };
         }
 
-        for token in self.tokens.iter() {
+        'parse_loop: for token in self.tokens.iter() {
             let value = &token.value;
-            let position = &token.position;
+            let position = token.position.clone();
             match value {
                 Value::Equal => {
                     if equal_used {
                         error!(position);
+                        break 'parse_loop;
                     }
                     match (&var.name, &var.value) {
                         (Some(_), None) => {
@@ -61,12 +71,14 @@ impl Parser {
                         }
                         _ => {
                             error!(position);
+                            break 'parse_loop;
                         }
                     }
                 }
                 Value::Semi => {
                     if !equal_used {
                         error!(position);
+                        break 'parse_loop;
                     }
                     match (&var.name, &var.value) {
                         (Some(name), Some(value)) => {
@@ -79,12 +91,14 @@ impl Parser {
                         }
                         _ => {
                             error!(position);
+                            break 'parse_loop;
                         }
                     }
                 }
                 Value::Variable(name) => {
                     if equal_used {
                         error!(position);
+                        break 'parse_loop;
                     }
                     match (&var.name, &var.value) {
                         (None, None) => {
@@ -92,12 +106,14 @@ impl Parser {
                         }
                         _ => {
                             error!(position);
+                            break 'parse_loop;
                         }
                     }
                 }
                 Value::String(value) => {
                     if !equal_used {
                         error!(position);
+                        break 'parse_loop;
                     }
                     match (&var.name, &var.value) {
                         (Some(_), None) => {
@@ -105,12 +121,14 @@ impl Parser {
                         }
                         _ => {
                             error!(position);
+                            break 'parse_loop;
                         }
                     }
                 }
                 Value::Number(value) => {
                     if !equal_used {
                         error!(position);
+                        break 'parse_loop;
                     }
                     match (&var.name, &var.value) {
                         (Some(_), None) => {
@@ -118,12 +136,14 @@ impl Parser {
                         }
                         _ => {
                             error!(position);
+                            break 'parse_loop;
                         }
                     }
                 }
                 Value::Bool(value) => {
                     if !equal_used {
                         error!(position);
+                        break 'parse_loop;
                     }
                     match (&var.name, &var.value) {
                         (Some(_), None) => {
@@ -131,6 +151,7 @@ impl Parser {
                         }
                         _ => {
                             error!(position);
+                            break 'parse_loop;
                         }
                     }
                 }
@@ -138,7 +159,11 @@ impl Parser {
             }
         }
 
-        vars
+        if let Some(err) = parser_error {
+            return Err(err);
+        }
+
+        Ok(vars)
     }
 }
 
@@ -157,6 +182,7 @@ mod test {
         let parser = Parser::new(tokens);
         let result = parser
             .parse()
+            .unwrap()
             .iter()
             .map(|v| VariableWithoutPosition {
                 name: v.name.clone(),
