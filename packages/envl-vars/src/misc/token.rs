@@ -6,7 +6,7 @@ pub enum Value {
     Number(String),
     Bool(bool),
     Variable(String),
-    Comment,
+    Comment(String),
     Equal,
     Semi,
 }

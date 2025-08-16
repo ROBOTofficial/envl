@@ -19,6 +19,7 @@ impl Lexer {
         let mut row = 1;
         let mut col = 0;
         let mut in_quote = false;
+        let mut is_comment = false;
         let mut is_escape = false;
         let mut current_token = String::new();
 
@@ -26,6 +27,18 @@ impl Lexer {
             let mut is_others = false;
 
             if c == '\n' {
+                if is_comment {
+                    tokens.push(Token {
+                        value: Value::Comment(current_token.clone()),
+                        position: Position {
+                            file_path: self.file_path.clone(),
+                            row: row.clone(),
+                            col: col.clone(),
+                        },
+                    });
+                    current_token.clear();
+                    is_comment = false;
+                }
                 row += 1;
                 col = 0;
                 continue;
@@ -83,7 +96,10 @@ impl Lexer {
                     });
                 }
                 other => {
-                    if other.is_whitespace() && !in_quote {
+                    if current_token == "/" && c == '/' {
+                        is_comment = true;
+                        current_token.clear();
+                    } else if other.is_whitespace() && !in_quote {
                         if !current_token.is_empty() {
                             let identifier = self.get_consume_identifier(current_token.clone());
                             tokens.push(Token {
