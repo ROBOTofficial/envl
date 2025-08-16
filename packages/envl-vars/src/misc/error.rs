@@ -7,15 +7,3 @@ macro_rules! envl_vars_error_message {
         )
     };
 }
-
-#[macro_export]
-macro_rules! envl_vars_error {
-    ($msg: literal, $pos: ident) => {
-        use crate::envl_vars_error_message;
-
-        let message = envl_vars_error_message!($msg, $pos);
-
-        eprintln!("{}", message);
-        std::process::exit(1);
-    };
-}
