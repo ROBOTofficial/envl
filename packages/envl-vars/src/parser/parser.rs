@@ -95,7 +95,7 @@ impl Parser {
                         }
                     }
                 }
-                Value::Variable(name) => {
+                Value::VariableName(name) => {
                     if equal_used {
                         error!(position);
                         break 'parse_loop;
@@ -110,51 +110,53 @@ impl Parser {
                         }
                     }
                 }
-                Value::String(value) => {
-                    if !equal_used {
-                        error!(position);
-                        break 'parse_loop;
-                    }
-                    match (&var.name, &var.value) {
-                        (Some(_), None) => {
-                            var.value = Some(VariableValue::String(value.clone()));
-                        }
-                        _ => {
+                Value::VariableValue(value) => match value {
+                    VariableValue::String(value) => {
+                        if !equal_used {
                             error!(position);
                             break 'parse_loop;
                         }
-                    }
-                }
-                Value::Number(value) => {
-                    if !equal_used {
-                        error!(position);
-                        break 'parse_loop;
-                    }
-                    match (&var.name, &var.value) {
-                        (Some(_), None) => {
-                            var.value = Some(VariableValue::Number(value.clone()));
+                        match (&var.name, &var.value) {
+                            (Some(_), None) => {
+                                var.value = Some(VariableValue::String(value.clone()));
+                            }
+                            _ => {
+                                error!(position);
+                                break 'parse_loop;
+                            }
                         }
-                        _ => {
+                    }
+                    VariableValue::Number(value) => {
+                        if !equal_used {
                             error!(position);
                             break 'parse_loop;
                         }
-                    }
-                }
-                Value::Bool(value) => {
-                    if !equal_used {
-                        error!(position);
-                        break 'parse_loop;
-                    }
-                    match (&var.name, &var.value) {
-                        (Some(_), None) => {
-                            var.value = Some(VariableValue::Bool(value.clone()));
+                        match (&var.name, &var.value) {
+                            (Some(_), None) => {
+                                var.value = Some(VariableValue::Number(value.clone()));
+                            }
+                            _ => {
+                                error!(position);
+                                break 'parse_loop;
+                            }
                         }
-                        _ => {
+                    }
+                    VariableValue::Bool(value) => {
+                        if !equal_used {
                             error!(position);
                             break 'parse_loop;
                         }
+                        match (&var.name, &var.value) {
+                            (Some(_), None) => {
+                                var.value = Some(VariableValue::Bool(value.clone()));
+                            }
+                            _ => {
+                                error!(position);
+                                break 'parse_loop;
+                            }
+                        }
                     }
-                }
+                },
                 _ => {}
             }
         }

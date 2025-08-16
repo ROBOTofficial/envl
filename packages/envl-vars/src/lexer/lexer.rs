@@ -2,6 +2,7 @@ use crate::misc::{
     num::is_num,
     position::Position,
     token::{Token, Value},
+    variable::VariableValue,
 };
 
 pub struct Lexer {
@@ -73,7 +74,9 @@ impl Lexer {
                 '"' => {
                     if in_quote {
                         tokens.push(Token {
-                            value: Value::String(current_token.clone()),
+                            value: Value::VariableValue(VariableValue::String(
+                                current_token.clone(),
+                            )),
                             position: position.clone(),
                         });
                     }
@@ -133,18 +136,21 @@ impl Lexer {
 
     fn get_consume_identifier(&self, token: String) -> Value {
         if is_num(token.clone()) {
-            Value::Number(token.clone())
+            Value::VariableValue(VariableValue::Number(token.clone()))
         } else if let Ok(b) = token.parse::<bool>() {
-            Value::Bool(b)
+            Value::VariableValue(VariableValue::Bool(b))
         } else {
-            Value::Variable(token)
+            Value::VariableName(token)
         }
     }
 }
 
 #[cfg(test)]
 mod test {
-    use crate::{lexer::lexer::Lexer, misc::token::Value};
+    use crate::{
+        lexer::lexer::Lexer,
+        misc::{token::Value, variable::VariableValue},
+    };
 
     #[test]
     fn lexer_test() {
@@ -155,9 +161,9 @@ mod test {
             .map(|t| t.value)
             .collect::<Vec<_>>();
         let expect_arr = vec![
-            Value::Variable("variable".to_string()),
+            Value::VariableName("variable".to_string()),
             Value::Equal,
-            Value::Number("12345".to_string()),
+            Value::VariableValue(VariableValue::Number("12345".to_string())),
             Value::Semi,
         ];
         assert_eq!(tokens, expect_arr);
