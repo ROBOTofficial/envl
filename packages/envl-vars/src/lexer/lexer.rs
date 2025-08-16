@@ -24,22 +24,27 @@ impl Lexer {
         let mut is_escape = false;
         let mut current_token = String::new();
 
-        for c in self.code.chars() {
+        'lexer_loop: for (i, c) in self.code.char_indices() {
+            let is_last = self.code.len() == (i + 1);
             let mut is_others = false;
 
-            if c == '\n' {
-                if is_comment {
-                    tokens.push(Token {
-                        value: Value::Comment(current_token.clone()),
-                        position: Position {
-                            file_path: self.file_path.clone(),
-                            row: row.clone(),
-                            col: col.clone(),
-                        },
-                    });
-                    current_token.clear();
-                    is_comment = false;
+            if is_comment && (c == '\n' || is_last) {
+                if c != '\n' && is_last {
+                    current_token.push(c);
                 }
+                tokens.push(Token {
+                    value: Value::Comment(current_token.clone()),
+                    position: Position {
+                        file_path: self.file_path.clone(),
+                        row: row.clone(),
+                        col: col.clone(),
+                    },
+                });
+                current_token.clear();
+                is_comment = false;
+            }
+
+            if c == '\n' {
                 row += 1;
                 col = 0;
                 continue;
@@ -65,7 +70,7 @@ impl Lexer {
                 continue;
             }
 
-            if in_quote && c != '"' {
+            if (in_quote && c != '"') || is_comment {
                 current_token.push(c);
                 continue;
             }
@@ -98,11 +103,17 @@ impl Lexer {
                         position: position.clone(),
                     });
                 }
-                other => {
-                    if current_token == "/" && c == '/' {
+                '/' => {
+                    if current_token == "/" {
                         is_comment = true;
                         current_token.clear();
-                    } else if other.is_whitespace() && !in_quote {
+                    } else {
+                        current_token.push(c);
+                        continue 'lexer_loop;
+                    }
+                }
+                other => {
+                    if other.is_whitespace() && !in_quote && !is_comment {
                         if !current_token.is_empty() {
                             let identifier = self.get_consume_identifier(current_token.clone());
                             tokens.push(Token {
@@ -118,7 +129,7 @@ impl Lexer {
                 }
             }
 
-            if !in_quote && !is_others && !current_token.is_empty() {
+            if !is_comment && !in_quote && !is_others && !current_token.is_empty() {
                 let identifier = self.get_consume_identifier(current_token.clone());
                 tokens.insert(
                     tokens.len() - 1,
@@ -152,19 +163,63 @@ mod test {
         misc::{token::Value, variable::VariableValue},
     };
 
-    #[test]
-    fn lexer_test() {
-        let lex = Lexer::new("test.envl".to_string(), "variable = 12345;".to_string());
-        let tokens = lex
-            .generate()
+    fn generate_tokens(code: String) -> Vec<Value> {
+        let lex = Lexer::new("test.envl".to_string(), code);
+        lex.generate()
             .into_iter()
             .map(|t| t.value)
-            .collect::<Vec<_>>();
+            .collect::<Vec<_>>()
+    }
+
+    #[test]
+    fn number_test() {
+        let tokens = generate_tokens("variable = 12345;".to_string());
         let expect_arr = vec![
             Value::VariableName("variable".to_string()),
             Value::Equal,
             Value::VariableValue(VariableValue::Number("12345".to_string())),
             Value::Semi,
+        ];
+        assert_eq!(tokens, expect_arr);
+    }
+
+    #[test]
+    fn string_test() {
+        let tokens = generate_tokens("variable = \"12345\";".to_string());
+        let expect_arr = vec![
+            Value::VariableName("variable".to_string()),
+            Value::Equal,
+            Value::VariableValue(VariableValue::String("12345".to_string())),
+            Value::Semi,
+        ];
+        assert_eq!(tokens, expect_arr);
+    }
+
+    #[test]
+    fn bool_test() {
+        let tokens = generate_tokens("variable = true; variable2 = false;".to_string());
+        let expect_arr = vec![
+            Value::VariableName("variable".to_string()),
+            Value::Equal,
+            Value::VariableValue(VariableValue::Bool(true)),
+            Value::Semi,
+            Value::VariableName("variable2".to_string()),
+            Value::Equal,
+            Value::VariableValue(VariableValue::Bool(false)),
+            Value::Semi,
+        ];
+        assert_eq!(tokens, expect_arr);
+    }
+
+    #[test]
+    fn comment_test() {
+        let tokens = generate_tokens("variable = 12345; //this is a comment".to_string());
+        let expect_arr = vec![
+            Value::VariableName("variable".to_string()),
+            Value::Equal,
+            Value::VariableValue(VariableValue::Number("12345".to_string())),
+            Value::Semi,
+            Value::Comment("this is a comment".to_string()),
         ];
         assert_eq!(tokens, expect_arr);
     }
