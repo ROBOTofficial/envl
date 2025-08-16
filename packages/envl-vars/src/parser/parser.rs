@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use crate::{
     envl_vars_error_message,
     misc::{
@@ -165,7 +167,27 @@ impl Parser {
             return Err(err);
         }
 
+        if let Some(err) = self.duplicate_check(&vars) {
+            return Err(err);
+        }
+
         Ok(vars)
+    }
+
+    pub fn duplicate_check(&self, vars: &Vec<Variable>) -> Option<ParserError> {
+        let mut hs = HashSet::new();
+
+        for var in vars {
+            if !hs.insert(var.name.clone()) {
+                let message = format!("{} is duplicated", &var.name);
+                return Some(ParserError {
+                    message,
+                    position: var.position.clone(),
+                });
+            }
+        }
+
+        None
     }
 }
 
@@ -247,5 +269,11 @@ mod test {
                 value: VariableValue::Number("12345".to_string())
             }]
         );
+    }
+
+    #[test]
+    pub fn duplicate_error_test() {
+        let result = gen_parsed_vars("variable = 12345; variable = \"12345\";".to_string());
+        assert!(result.is_err());
     }
 }
