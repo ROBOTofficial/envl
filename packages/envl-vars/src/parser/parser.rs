@@ -60,7 +60,7 @@ impl Parser {
                 parser_error = Some(ParserError {
                     code: ErrorCode::SyntaxError,
                     message,
-                    $pos,
+                    position: $pos,
                 })
             };
         }
