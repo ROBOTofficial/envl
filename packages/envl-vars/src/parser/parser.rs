@@ -219,7 +219,7 @@ mod test {
     }
 
     #[test]
-    pub fn number_test() {
+    fn number_test() {
         let result = gen_vars("variable = 12345;".to_string());
         assert_eq!(
             result,
@@ -231,7 +231,7 @@ mod test {
     }
 
     #[test]
-    pub fn string_test() {
+    fn string_test() {
         let result = gen_vars("variable = \"12345\";".to_string());
         assert_eq!(
             result,
@@ -243,7 +243,7 @@ mod test {
     }
 
     #[test]
-    pub fn char_test() {
+    fn char_test() {
         let result = gen_vars("variable = 'a';".to_string());
         assert_eq!(
             result,
@@ -255,7 +255,7 @@ mod test {
     }
 
     #[test]
-    pub fn bool_test() {
+    fn bool_test() {
         let result = gen_vars("variable = true; variable2 = false;".to_string());
         assert_eq!(
             result,
@@ -273,7 +273,7 @@ mod test {
     }
 
     #[test]
-    pub fn comment_test() {
+    fn comment_test() {
         let result = gen_vars("variable = 12345; //this is a comment".to_string());
         assert_eq!(
             result,
@@ -285,7 +285,7 @@ mod test {
     }
 
     #[test]
-    pub fn duplicate_error_test() {
+    fn duplicate_error_test() {
         let result = gen_parsed_vars("variable = 12345; variable = \"12345\";".to_string());
         assert!(result.is_err());
         if let Err(err) = result {
