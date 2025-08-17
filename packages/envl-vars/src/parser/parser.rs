@@ -115,12 +115,29 @@ impl Parser {
                             str_value.remove(value.len() - 1);
                             str_value.remove(0);
                             var_value = VariableValue::String(str_value);
+                        } else if value.starts_with('\'') && value.ends_with('\'') {
+                            let mut str_value = value.clone();
+                            str_value.remove(value.len() - 1);
+                            str_value.remove(0);
+                            if let Ok(c) = str_value.parse::<char>() {
+                                var_value = VariableValue::Char(c);
+                            } else {
+                                parser_error = Some(ParserError {
+                                    message: "can't input multiple characters in char".to_string(),
+                                    position,
+                                });
+                                break 'parse_loop;
+                            }
                         } else if is_num(value.clone()) {
                             var_value = VariableValue::Number(value.clone());
                         } else if let Ok(b) = value.parse::<bool>() {
                             var_value = VariableValue::Bool(b);
                         } else {
-                            var_value = VariableValue::String(value.clone());
+                            parser_error = Some(ParserError {
+                                message: "Invalid type".to_string(),
+                                position,
+                            });
+                            break 'parse_loop;
                         }
                         var = Var {
                             name: var.name,
@@ -209,6 +226,18 @@ mod test {
             vec![VariableWithoutPosition {
                 name: "variable".to_string(),
                 value: VariableValue::String("12345".to_string())
+            }]
+        );
+    }
+
+    #[test]
+    pub fn char_test() {
+        let result = gen_vars("variable = 'a';".to_string());
+        assert_eq!(
+            result,
+            vec![VariableWithoutPosition {
+                name: "variable".to_string(),
+                value: VariableValue::Char('a')
             }]
         );
     }

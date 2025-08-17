@@ -68,16 +68,22 @@ impl Lexer {
                 continue;
             }
 
-            if (in_quote && c != '"') || is_comment {
+            if (in_quote && c != '"' && c != '\'') || is_comment {
                 current_token.push(c);
                 continue;
             }
 
             match c {
-                '"' => {
+                '"' | '\'' => {
                     if in_quote {
+                        let quote = c.clone();
                         tokens.push(Token {
-                            value: Value::Ident(format!("\"{}\"", current_token.clone())),
+                            value: Value::Ident(format!(
+                                "{}{}{}",
+                                quote,
+                                current_token.clone(),
+                                quote
+                            )),
                             position: position.clone(),
                         });
                     }
@@ -173,6 +179,18 @@ mod test {
             Value::Ident("variable".to_string()),
             Value::Equal,
             Value::Ident("\"12345\"".to_string()),
+            Value::Semi,
+        ];
+        assert_eq!(tokens, expect_arr);
+    }
+
+    #[test]
+    fn char_test() {
+        let tokens = generate_tokens("variable = 'a';".to_string());
+        let expect_arr = vec![
+            Value::Ident("variable".to_string()),
+            Value::Equal,
+            Value::Ident("'a'".to_string()),
             Value::Semi,
         ];
         assert_eq!(tokens, expect_arr);

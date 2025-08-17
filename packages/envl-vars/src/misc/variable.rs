@@ -5,6 +5,7 @@ pub enum VariableValue {
     String(String),
     Number(String),
     Bool(bool),
+    Char(char),
 }
 
 #[derive(Debug)]
