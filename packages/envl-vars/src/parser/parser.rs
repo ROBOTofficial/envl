@@ -8,10 +8,12 @@ use crate::{
         token::{Token, Value},
         variable::{Variable, VariableValue},
     },
+    parser::error::ErrorCode,
 };
 
 #[derive(Debug)]
 pub struct ParserError {
+    pub code: ErrorCode,
     pub message: String,
     pub position: Position,
 }
@@ -55,7 +57,11 @@ impl Parser {
                     "The order must be variable name, equal sign, value, and semicolon.",
                     $pos
                 );
-                parser_error = Some(ParserError { message, $pos })
+                parser_error = Some(ParserError {
+                    code: ErrorCode::SyntaxError,
+                    message,
+                    $pos,
+                })
             };
         }
 
@@ -123,6 +129,7 @@ impl Parser {
                                 var_value = VariableValue::Char(c);
                             } else {
                                 parser_error = Some(ParserError {
+                                    code: ErrorCode::MultipleCharacters,
                                     message: "can't input multiple characters in char".to_string(),
                                     position,
                                 });
@@ -134,6 +141,7 @@ impl Parser {
                             var_value = VariableValue::Bool(b);
                         } else {
                             parser_error = Some(ParserError {
+                                code: ErrorCode::InvalidType,
                                 message: "Invalid type".to_string(),
                                 position,
                             });
@@ -170,6 +178,7 @@ impl Parser {
             if !hs.insert(var.name.clone()) {
                 let message = format!("{} is duplicated", &var.name);
                 return Some(ParserError {
+                    code: ErrorCode::DuplicateVars,
                     message,
                     position: var.position.clone(),
                 });
@@ -185,7 +194,10 @@ mod test {
     use crate::{
         lexer::lexer::Lexer,
         misc::variable::{Variable, VariableValue, VariableWithoutPosition},
-        parser::parser::{Parser, ParserError},
+        parser::{
+            error::ErrorCode,
+            parser::{Parser, ParserError},
+        },
     };
 
     fn gen_parsed_vars(code: String) -> Result<Vec<Variable>, ParserError> {
@@ -276,5 +288,8 @@ mod test {
     pub fn duplicate_error_test() {
         let result = gen_parsed_vars("variable = 12345; variable = \"12345\";".to_string());
         assert!(result.is_err());
+        if let Err(err) = result {
+            assert_eq!(err.code, ErrorCode::DuplicateVars);
+        }
     }
 }
