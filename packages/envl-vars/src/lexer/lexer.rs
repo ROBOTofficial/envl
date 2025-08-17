@@ -1,8 +1,6 @@
 use crate::misc::{
-    num::is_num,
     position::Position,
     token::{Token, Value},
-    variable::VariableValue,
 };
 
 pub struct Lexer {
@@ -79,9 +77,7 @@ impl Lexer {
                 '"' => {
                     if in_quote {
                         tokens.push(Token {
-                            value: Value::VariableValue(VariableValue::String(
-                                current_token.clone(),
-                            )),
+                            value: Value::Ident(format!("\"{}\"", current_token.clone())),
                             position: position.clone(),
                         });
                     }
@@ -115,7 +111,7 @@ impl Lexer {
                 other => {
                     if other.is_whitespace() && !in_quote && !is_comment {
                         if !current_token.is_empty() {
-                            let identifier = self.get_consume_identifier(current_token.clone());
+                            let identifier = Value::Ident(current_token.clone());
                             tokens.push(Token {
                                 value: identifier,
                                 position: position.clone(),
@@ -130,7 +126,7 @@ impl Lexer {
             }
 
             if !is_comment && !in_quote && !is_others && !current_token.is_empty() {
-                let identifier = self.get_consume_identifier(current_token.clone());
+                let identifier = Value::Ident(current_token.clone());
                 tokens.insert(
                     tokens.len() - 1,
                     Token {
@@ -144,24 +140,11 @@ impl Lexer {
 
         tokens
     }
-
-    fn get_consume_identifier(&self, token: String) -> Value {
-        if is_num(token.clone()) {
-            Value::VariableValue(VariableValue::Number(token.clone()))
-        } else if let Ok(b) = token.parse::<bool>() {
-            Value::VariableValue(VariableValue::Bool(b))
-        } else {
-            Value::VariableName(token)
-        }
-    }
 }
 
 #[cfg(test)]
 mod test {
-    use crate::{
-        lexer::lexer::Lexer,
-        misc::{token::Value, variable::VariableValue},
-    };
+    use crate::{lexer::lexer::Lexer, misc::token::Value};
 
     fn generate_tokens(code: String) -> Vec<Value> {
         let lex = Lexer::new("test.envl".to_string(), code);
@@ -175,9 +158,9 @@ mod test {
     fn number_test() {
         let tokens = generate_tokens("variable = 12345;".to_string());
         let expect_arr = vec![
-            Value::VariableName("variable".to_string()),
+            Value::Ident("variable".to_string()),
             Value::Equal,
-            Value::VariableValue(VariableValue::Number("12345".to_string())),
+            Value::Ident("12345".to_string()),
             Value::Semi,
         ];
         assert_eq!(tokens, expect_arr);
@@ -187,9 +170,9 @@ mod test {
     fn string_test() {
         let tokens = generate_tokens("variable = \"12345\";".to_string());
         let expect_arr = vec![
-            Value::VariableName("variable".to_string()),
+            Value::Ident("variable".to_string()),
             Value::Equal,
-            Value::VariableValue(VariableValue::String("12345".to_string())),
+            Value::Ident("\"12345\"".to_string()),
             Value::Semi,
         ];
         assert_eq!(tokens, expect_arr);
@@ -199,13 +182,13 @@ mod test {
     fn bool_test() {
         let tokens = generate_tokens("variable = true; variable2 = false;".to_string());
         let expect_arr = vec![
-            Value::VariableName("variable".to_string()),
+            Value::Ident("variable".to_string()),
             Value::Equal,
-            Value::VariableValue(VariableValue::Bool(true)),
+            Value::Ident("true".to_string()),
             Value::Semi,
-            Value::VariableName("variable2".to_string()),
+            Value::Ident("variable2".to_string()),
             Value::Equal,
-            Value::VariableValue(VariableValue::Bool(false)),
+            Value::Ident("false".to_string()),
             Value::Semi,
         ];
         assert_eq!(tokens, expect_arr);
@@ -215,9 +198,9 @@ mod test {
     fn comment_test() {
         let tokens = generate_tokens("variable = 12345; //this is a comment".to_string());
         let expect_arr = vec![
-            Value::VariableName("variable".to_string()),
+            Value::Ident("variable".to_string()),
             Value::Equal,
-            Value::VariableValue(VariableValue::Number("12345".to_string())),
+            Value::Ident("12345".to_string()),
             Value::Semi,
             Value::Comment("this is a comment".to_string()),
         ];

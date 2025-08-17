@@ -1,9 +1,8 @@
-use crate::misc::{position::Position, variable::VariableValue};
+use crate::misc::position::Position;
 
 #[derive(Debug, PartialEq)]
 pub enum Value {
-    VariableName(String),
-    VariableValue(VariableValue),
+    Ident(String),
     Comment(String),
     Equal,
     Semi,

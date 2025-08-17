@@ -3,6 +3,7 @@ use std::collections::HashSet;
 use crate::{
     envl_vars_error_message,
     misc::{
+        num::is_num,
         position::Position,
         token::{Token, Value},
         variable::{Variable, VariableValue},
@@ -97,68 +98,39 @@ impl Parser {
                         }
                     }
                 }
-                Value::VariableName(name) => {
-                    if equal_used {
+                Value::Ident(value) => {
+                    if var.name.is_some() && var.value.is_some() {
                         error!(position);
                         break 'parse_loop;
                     }
-                    match (&var.name, &var.value) {
-                        (None, None) => {
-                            var.name = Some(name.clone());
+                    if var.name.is_none() {
+                        var = Var {
+                            name: Some(value.clone()),
+                            value: None,
+                        };
+                    } else if var.value.is_none() && equal_used {
+                        let var_value: VariableValue;
+                        if value.starts_with('"') && value.ends_with('"') {
+                            let mut str_value = value.clone();
+                            str_value.remove(value.len() - 1);
+                            str_value.remove(0);
+                            var_value = VariableValue::String(str_value);
+                        } else if is_num(value.clone()) {
+                            var_value = VariableValue::Number(value.clone());
+                        } else if let Ok(b) = value.parse::<bool>() {
+                            var_value = VariableValue::Bool(b);
+                        } else {
+                            var_value = VariableValue::String(value.clone());
                         }
-                        _ => {
-                            error!(position);
-                            break 'parse_loop;
-                        }
+                        var = Var {
+                            name: var.name,
+                            value: Some(var_value),
+                        };
+                    } else {
+                        error!(position);
+                        break 'parse_loop;
                     }
                 }
-                Value::VariableValue(value) => match value {
-                    VariableValue::String(value) => {
-                        if !equal_used {
-                            error!(position);
-                            break 'parse_loop;
-                        }
-                        match (&var.name, &var.value) {
-                            (Some(_), None) => {
-                                var.value = Some(VariableValue::String(value.clone()));
-                            }
-                            _ => {
-                                error!(position);
-                                break 'parse_loop;
-                            }
-                        }
-                    }
-                    VariableValue::Number(value) => {
-                        if !equal_used {
-                            error!(position);
-                            break 'parse_loop;
-                        }
-                        match (&var.name, &var.value) {
-                            (Some(_), None) => {
-                                var.value = Some(VariableValue::Number(value.clone()));
-                            }
-                            _ => {
-                                error!(position);
-                                break 'parse_loop;
-                            }
-                        }
-                    }
-                    VariableValue::Bool(value) => {
-                        if !equal_used {
-                            error!(position);
-                            break 'parse_loop;
-                        }
-                        match (&var.name, &var.value) {
-                            (Some(_), None) => {
-                                var.value = Some(VariableValue::Bool(value.clone()));
-                            }
-                            _ => {
-                                error!(position);
-                                break 'parse_loop;
-                            }
-                        }
-                    }
-                },
                 _ => {}
             }
         }
