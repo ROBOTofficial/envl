@@ -4,6 +4,9 @@ use crate::misc::position::Position;
 pub enum Value {
     Ident(String),
     Comment(String),
+    RightBracket,
+    LeftBracket,
+    Comma,
     Equal,
     Semi,
 }

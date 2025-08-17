@@ -35,6 +35,9 @@ impl Parser {
     pub fn parse(&self) -> Result<Vec<Variable>, ParserError> {
         let mut vars = Vec::new();
         let mut equal_used = false;
+        let mut comma_used = false;
+        let mut in_array = false;
+        let mut current_array = Vec::new();
         let mut var = Var {
             name: None,
             value: None,
@@ -69,6 +72,52 @@ impl Parser {
             let value = &token.value;
             let position = token.position.clone();
             match value {
+                Value::LeftBracket => {
+                    if var.name.is_some() && var.value.is_none() && equal_used && !in_array {
+                        in_array = true;
+                    } else {
+                        parser_error = Some(ParserError {
+                            code: ErrorCode::SyntaxError,
+                            message: format!("Write arrays after the equal written"),
+                            position: position.clone(),
+                        });
+                        break 'parse_loop;
+                    }
+                }
+                Value::RightBracket => {
+                    if !in_array {
+                        parser_error = Some(ParserError {
+                            code: ErrorCode::SyntaxError,
+                            message: format!("Use ] only when closing an array"),
+                            position: position.clone(),
+                        });
+                        break 'parse_loop;
+                    }
+
+                    match (var.name.clone(), var.value.clone()) {
+                        (Some(_), None) if equal_used => {
+                            var.value = Some(VariableValue::Array(current_array.clone()));
+                            current_array.clear();
+                            comma_used = false;
+                            in_array = false;
+                        }
+                        _ => {
+                            error!(position);
+                            break 'parse_loop;
+                        }
+                    }
+                }
+                Value::Comma => {
+                    if !(in_array && !comma_used && current_array.len() != 0) {
+                        parser_error = Some(ParserError {
+                            code: ErrorCode::SyntaxError,
+                            message: format!("Comma position is invalid"),
+                            position: position.clone(),
+                        });
+                        break 'parse_loop;
+                    }
+                    comma_used = true;
+                }
                 Value::Equal => {
                     if equal_used {
                         error!(position);
@@ -109,7 +158,7 @@ impl Parser {
                         error!(position);
                         break 'parse_loop;
                     }
-                    if var.name.is_none() {
+                    if var.name.is_none() && !equal_used {
                         var = Var {
                             name: Some(value.clone()),
                             value: None,
@@ -147,10 +196,24 @@ impl Parser {
                             });
                             break 'parse_loop;
                         }
-                        var = Var {
-                            name: var.name,
-                            value: Some(var_value),
-                        };
+
+                        if in_array {
+                            if current_array.len() != 0 && !comma_used {
+                                parser_error = Some(ParserError {
+                                    code: ErrorCode::SyntaxError,
+                                    message: format!("Comma is required"),
+                                    position: position.clone(),
+                                });
+                                break 'parse_loop;
+                            }
+                            comma_used = false;
+                            current_array.push(var_value);
+                        } else {
+                            var = Var {
+                                name: var.name,
+                                value: Some(var_value),
+                            };
+                        }
                     } else {
                         error!(position);
                         break 'parse_loop;
@@ -269,6 +332,23 @@ mod test {
                     value: VariableValue::Bool(false)
                 }
             ]
+        );
+    }
+
+    #[test]
+    fn array_test() {
+        let result = gen_vars("variable = [ \"abc\", 'a', 12345, true ];".to_string());
+        assert_eq!(
+            result,
+            vec![VariableWithoutPosition {
+                name: "variable".to_string(),
+                value: VariableValue::Array(vec![
+                    VariableValue::String("abc".to_string()),
+                    VariableValue::Char('a'),
+                    VariableValue::Number("12345".to_string()),
+                    VariableValue::Bool(true),
+                ])
+            }]
         );
     }
 

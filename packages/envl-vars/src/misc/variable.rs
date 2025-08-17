@@ -6,6 +6,7 @@ pub enum VariableValue {
     Number(String),
     Bool(bool),
     Char(char),
+    Array(Vec<VariableValue>),
 }
 
 #[derive(Debug)]

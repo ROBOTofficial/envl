@@ -96,6 +96,24 @@ impl Lexer {
                 '\\' => {
                     is_escape = true;
                 }
+                '[' => {
+                    tokens.push(Token {
+                        value: Value::LeftBracket,
+                        position: position.clone(),
+                    });
+                }
+                ']' => {
+                    tokens.push(Token {
+                        value: Value::RightBracket,
+                        position: position.clone(),
+                    });
+                }
+                ',' => {
+                    tokens.push(Token {
+                        value: Value::Comma,
+                        position: position.clone(),
+                    });
+                }
                 ';' => {
                     tokens.push(Token {
                         value: Value::Semi,
@@ -210,6 +228,26 @@ mod test {
             Value::Ident("variable2".to_string()),
             Value::Equal,
             Value::Ident("false".to_string()),
+            Value::Semi,
+        ];
+        assert_eq!(tokens, expect_arr);
+    }
+
+    #[test]
+    fn array_test() {
+        let tokens = generate_tokens("variable = [ \"abc\", 'a', 12345, true ];".to_string());
+        let expect_arr = vec![
+            Value::Ident("variable".to_string()),
+            Value::Equal,
+            Value::LeftBracket,
+            Value::Ident("\"abc\"".to_string()),
+            Value::Comma,
+            Value::Ident("'a'".to_string()),
+            Value::Comma,
+            Value::Ident("12345".to_string()),
+            Value::Comma,
+            Value::Ident("true".to_string()),
+            Value::RightBracket,
             Value::Semi,
         ];
         assert_eq!(tokens, expect_arr);
