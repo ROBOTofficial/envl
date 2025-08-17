@@ -20,6 +20,7 @@ impl Lexer {
         let mut in_quote = false;
         let mut is_comment = false;
         let mut is_escape = false;
+        let mut start_quote = char::default();
         let mut current_token = String::new();
 
         'lexer_loop: for (i, c) in self.code.char_indices() {
@@ -76,16 +77,18 @@ impl Lexer {
             match c {
                 '"' | '\'' => {
                     if in_quote {
-                        let quote = c.clone();
                         tokens.push(Token {
                             value: Value::Ident(format!(
                                 "{}{}{}",
-                                quote,
+                                start_quote,
                                 current_token.clone(),
-                                quote
+                                c
                             )),
                             position: position.clone(),
                         });
+                        start_quote = char::default();
+                    } else {
+                        start_quote = c.clone();
                     }
                     in_quote = !in_quote;
                     current_token.clear();

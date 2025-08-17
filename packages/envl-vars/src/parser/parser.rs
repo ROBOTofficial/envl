@@ -130,7 +130,7 @@ impl Parser {
                             } else {
                                 parser_error = Some(ParserError {
                                     code: ErrorCode::MultipleCharacters,
-                                    message: "can't input multiple characters in char".to_string(),
+                                    message: "Can't input multiple characters in char".to_string(),
                                     position,
                                 });
                                 break 'parse_loop;
@@ -285,11 +285,38 @@ mod test {
     }
 
     #[test]
+    fn syntax_error_test() {
+        let result = gen_parsed_vars("variable = \"aiueo';".to_string());
+        assert!(result.is_err());
+        if let Err(err) = result {
+            assert_eq!(err.code, ErrorCode::InvalidType);
+        }
+    }
+
+    #[test]
     fn duplicate_error_test() {
         let result = gen_parsed_vars("variable = 12345; variable = \"12345\";".to_string());
         assert!(result.is_err());
         if let Err(err) = result {
             assert_eq!(err.code, ErrorCode::DuplicateVars);
+        }
+    }
+
+    #[test]
+    fn invalid_type_error_test() {
+        let result = gen_parsed_vars("variable = aiueo;".to_string());
+        assert!(result.is_err());
+        if let Err(err) = result {
+            assert_eq!(err.code, ErrorCode::InvalidType);
+        }
+    }
+
+    #[test]
+    fn multiple_char_error() {
+        let result = gen_parsed_vars("variable = 'char';".to_string());
+        assert!(result.is_err());
+        if let Err(err) = result {
+            assert_eq!(err.code, ErrorCode::MultipleCharacters);
         }
     }
 }
