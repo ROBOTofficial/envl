@@ -18,6 +18,12 @@ pub struct ParserError {
     pub position: Position,
 }
 
+#[derive(Debug, Clone)]
+enum ParsedIdent {
+    Name(String),
+    Value(VariableValue),
+}
+
 struct Var {
     pub name: Option<String>,
     pub value: Option<VariableValue>,
@@ -156,70 +162,38 @@ impl Parser {
                         }
                     }
                     Value::Ident(value) => {
-                        if var.name.is_some() && var.value.is_some() {
-                            error!(position);
-                            break 'parse_loop;
-                        }
-                        if var.name.is_none() && !equal_used {
-                            var = Var {
-                                name: Some(value.clone()),
-                                value: None,
-                            };
-                        } else if var.value.is_none() && equal_used {
-                            let var_value: VariableValue;
-                            if value.starts_with('"') && value.ends_with('"') {
-                                let mut str_value = value.clone();
-                                str_value.remove(value.len() - 1);
-                                str_value.remove(0);
-                                var_value = VariableValue::String(str_value);
-                            } else if value.starts_with('\'') && value.ends_with('\'') {
-                                let mut str_value = value.clone();
-                                str_value.remove(value.len() - 1);
-                                str_value.remove(0);
-                                if let Ok(c) = str_value.parse::<char>() {
-                                    var_value = VariableValue::Char(c);
-                                } else {
-                                    parser_error = Some(ParserError {
-                                        code: ErrorCode::MultipleCharacters,
-                                        message: "Can't input multiple characters in char"
-                                            .to_string(),
-                                        position,
-                                    });
-                                    break 'parse_loop;
+                        match self.parse_ident(value.clone(), &var, &position, &equal_used) {
+                            Ok(ident) => match ident {
+                                ParsedIdent::Name(name) => {
+                                    var = Var {
+                                        name: Some(name.clone()),
+                                        value: None,
+                                    };
                                 }
-                            } else if is_num(value.clone()) {
-                                var_value = VariableValue::Number(value.clone());
-                            } else if let Ok(b) = value.parse::<bool>() {
-                                var_value = VariableValue::Bool(b);
-                            } else {
-                                parser_error = Some(ParserError {
-                                    code: ErrorCode::InvalidType,
-                                    message: "Invalid type".to_string(),
-                                    position,
-                                });
+                                ParsedIdent::Value(value) => {
+                                    if in_array {
+                                        if current_array.len() != 0 && !comma_used {
+                                            parser_error = Some(ParserError {
+                                                code: ErrorCode::SyntaxError,
+                                                message: format!("Comma is required"),
+                                                position: position.clone(),
+                                            });
+                                            break 'parse_loop;
+                                        }
+                                        comma_used = false;
+                                        current_array.push(value.clone());
+                                    } else {
+                                        var = Var {
+                                            name: var.name,
+                                            value: Some(value.clone()),
+                                        };
+                                    }
+                                }
+                            },
+                            Err(e) => {
+                                parser_error = Some(e);
                                 break 'parse_loop;
                             }
-
-                            if in_array {
-                                if current_array.len() != 0 && !comma_used {
-                                    parser_error = Some(ParserError {
-                                        code: ErrorCode::SyntaxError,
-                                        message: format!("Comma is required"),
-                                        position: position.clone(),
-                                    });
-                                    break 'parse_loop;
-                                }
-                                comma_used = false;
-                                current_array.push(var_value);
-                            } else {
-                                var = Var {
-                                    name: var.name,
-                                    value: Some(var_value),
-                                };
-                            }
-                        } else {
-                            error!(position);
-                            break 'parse_loop;
                         }
                     }
                     _ => {}
@@ -255,5 +229,69 @@ impl Parser {
         }
 
         None
+    }
+
+    fn parse_ident(
+        &self,
+        value: String,
+        var: &Var,
+        position: &Position,
+        equal_used: &bool,
+    ) -> Result<ParsedIdent, ParserError> {
+        if var.name.is_some() && var.value.is_some() {
+            return Err(ParserError {
+                code: ErrorCode::SyntaxError,
+                message: envl_vars_error_message!(
+                    "The order must be variable name, equal sign, value, and semicolon.",
+                    position
+                ),
+                position: position.clone(),
+            });
+        }
+        if var.name.is_none() && !equal_used {
+            Ok(ParsedIdent::Name(value.clone()))
+        } else if var.value.is_none() && *equal_used {
+            let var_value: VariableValue;
+            if value.starts_with('"') && value.ends_with('"') {
+                let mut str_value = value.clone();
+                str_value.remove(value.len() - 1);
+                str_value.remove(0);
+                var_value = VariableValue::String(str_value);
+            } else if value.starts_with('\'') && value.ends_with('\'') {
+                let mut str_value = value.clone();
+                str_value.remove(value.len() - 1);
+                str_value.remove(0);
+                if let Ok(c) = str_value.parse::<char>() {
+                    var_value = VariableValue::Char(c);
+                } else {
+                    return Err(ParserError {
+                        code: ErrorCode::MultipleCharacters,
+                        message: "Can't input multiple characters in char".to_string(),
+                        position: position.clone(),
+                    });
+                }
+            } else if is_num(value.clone()) {
+                var_value = VariableValue::Number(value.clone());
+            } else if let Ok(b) = value.parse::<bool>() {
+                var_value = VariableValue::Bool(b);
+            } else {
+                return Err(ParserError {
+                    code: ErrorCode::InvalidType,
+                    message: "Invalid type".to_string(),
+                    position: position.clone(),
+                });
+            }
+
+            Ok(ParsedIdent::Value(var_value))
+        } else {
+            Err(ParserError {
+                code: ErrorCode::SyntaxError,
+                message: envl_vars_error_message!(
+                    "The order must be variable name, equal sign, value, and semicolon.",
+                    position
+                ),
+                position: position.clone(),
+            })
+        }
     }
 }
