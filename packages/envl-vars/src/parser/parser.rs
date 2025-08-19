@@ -240,7 +240,7 @@ impl Parser {
         Ok(vars)
     }
 
-    pub fn duplicate_check(&self, vars: &Vec<Variable>) -> Option<ParserError> {
+    fn duplicate_check(&self, vars: &Vec<Variable>) -> Option<ParserError> {
         let mut hs = HashSet::new();
 
         for var in vars {
