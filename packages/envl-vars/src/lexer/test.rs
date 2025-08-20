@@ -103,6 +103,30 @@ mod test {
     }
 
     #[test]
+    fn triple_array_test() {
+        let tokens = generate_tokens("variable = [ [ [ 123 ] ], [ [\"456\"] ] ];".to_string());
+        let expect_arr = vec![
+            Value::Ident("variable".to_string()),
+            Value::Equal,
+            Value::LeftBracket,
+            Value::LeftBracket,
+            Value::LeftBracket,
+            Value::Ident("123".to_string()),
+            Value::RightBracket,
+            Value::RightBracket,
+            Value::Comma,
+            Value::LeftBracket,
+            Value::LeftBracket,
+            Value::Ident("\"456\"".to_string()),
+            Value::RightBracket,
+            Value::RightBracket,
+            Value::RightBracket,
+            Value::Semi,
+        ];
+        assert_eq!(tokens, expect_arr);
+    }
+
+    #[test]
     fn comment_test() {
         let tokens = generate_tokens("variable = 12345; //this is a comment".to_string());
         let expect_arr = vec![

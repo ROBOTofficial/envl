@@ -99,6 +99,40 @@ mod test {
     }
 
     #[test]
+    fn double_array_test() {
+        let result = gen_vars("variable = [ [ 123 ], [\"456\"] ];".to_string());
+        assert_eq!(
+            result,
+            vec![VariableWithoutPosition {
+                name: "variable".to_string(),
+                value: VariableValue::Array(vec![
+                    VariableValue::Array(vec![VariableValue::Number("123".to_string())]),
+                    VariableValue::Array(vec![VariableValue::String("456".to_string())])
+                ])
+            }]
+        );
+    }
+
+    #[test]
+    fn triple_array_test() {
+        let result = gen_vars("variable = [ [ [ 123 ] ], [ [\"456\"] ] ];".to_string());
+        assert_eq!(
+            result,
+            vec![VariableWithoutPosition {
+                name: "variable".to_string(),
+                value: VariableValue::Array(vec![
+                    VariableValue::Array(vec![VariableValue::Array(vec![VariableValue::Number(
+                        "123".to_string()
+                    )])]),
+                    VariableValue::Array(vec![VariableValue::Array(vec![VariableValue::String(
+                        "456".to_string()
+                    )])]),
+                ])
+            }]
+        );
+    }
+
+    #[test]
     fn comment_test() {
         let result = gen_vars("variable = 12345; //this is a comment".to_string());
         assert_eq!(

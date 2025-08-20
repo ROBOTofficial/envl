@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::{collections::HashSet, slice::Iter};
 
 use crate::{
     envl_vars_error_message,
@@ -42,9 +42,6 @@ impl Parser {
         let mut tokens = self.tokens.iter();
         let mut vars = Vec::new();
         let mut equal_used = false;
-        let mut comma_used = false;
-        let mut in_array = false;
-        let mut current_array = Vec::new();
         let mut var = Var {
             name: None,
             value: None,
@@ -80,51 +77,42 @@ impl Parser {
                 let value = &token.value;
                 let position = token.position.clone();
                 match value {
-                    Value::LeftBracket => {
-                        if var.name.is_some() && var.value.is_none() && equal_used && !in_array {
-                            in_array = true;
-                        } else {
-                            parser_error = Some(ParserError {
-                                code: ErrorCode::SyntaxError,
-                                message: format!("Write arrays after the equal written"),
-                                position: position.clone(),
-                            });
-                            break 'parse_loop;
-                        }
-                    }
-                    Value::RightBracket => {
-                        if !in_array {
-                            parser_error = Some(ParserError {
-                                code: ErrorCode::SyntaxError,
-                                message: format!("Use ] only when closing an array"),
-                                position: position.clone(),
-                            });
-                            break 'parse_loop;
-                        }
-
-                        match (var.name.clone(), var.value.clone()) {
-                            (Some(_), None) if equal_used => {
-                                var.value = Some(VariableValue::Array(current_array.clone()));
-                                current_array.clear();
-                                comma_used = false;
-                                in_array = false;
-                            }
-                            _ => {
-                                error!(position);
+                    Value::LeftBracket => match self.parse_array(&mut tokens) {
+                        Ok(v) => {
+                            if var.name.is_some() && var.value.is_none() && equal_used {
+                                var = Var {
+                                    name: var.name,
+                                    value: Some(v.clone()),
+                                }
+                            } else {
+                                parser_error = Some(ParserError {
+                                    code: ErrorCode::SyntaxError,
+                                    message: format!("Write arrays after the equal written"),
+                                    position: position.clone(),
+                                });
                                 break 'parse_loop;
                             }
                         }
-                    }
-                    Value::Comma => {
-                        if !(in_array && !comma_used && current_array.len() != 0) {
-                            parser_error = Some(ParserError {
-                                code: ErrorCode::SyntaxError,
-                                message: format!("Comma position is invalid"),
-                                position: position.clone(),
-                            });
+                        Err(err) => {
+                            parser_error = Some(err);
                             break 'parse_loop;
                         }
-                        comma_used = true;
+                    },
+                    Value::RightBracket => {
+                        parser_error = Some(ParserError {
+                            code: ErrorCode::SyntaxError,
+                            message: format!("Use ] only when closing an array"),
+                            position: position.clone(),
+                        });
+                        break 'parse_loop;
+                    }
+                    Value::Comma => {
+                        parser_error = Some(ParserError {
+                            code: ErrorCode::SyntaxError,
+                            message: format!("Comma position is invalid"),
+                            position: position.clone(),
+                        });
+                        break 'parse_loop;
                     }
                     Value::Equal => {
                         if equal_used {
@@ -171,23 +159,10 @@ impl Parser {
                                     };
                                 }
                                 ParsedIdent::Value(value) => {
-                                    if in_array {
-                                        if current_array.len() != 0 && !comma_used {
-                                            parser_error = Some(ParserError {
-                                                code: ErrorCode::SyntaxError,
-                                                message: format!("Comma is required"),
-                                                position: position.clone(),
-                                            });
-                                            break 'parse_loop;
-                                        }
-                                        comma_used = false;
-                                        current_array.push(value.clone());
-                                    } else {
-                                        var = Var {
-                                            name: var.name,
-                                            value: Some(value.clone()),
-                                        };
-                                    }
+                                    var = Var {
+                                        name: var.name,
+                                        value: Some(value.clone()),
+                                    };
                                 }
                             },
                             Err(e) => {
@@ -231,6 +206,80 @@ impl Parser {
         None
     }
 
+    fn parse_array<'a>(&self, tokens: &mut Iter<'a, Token>) -> Result<VariableValue, ParserError> {
+        let mut array_contents = Vec::new();
+        let mut parser_error: Option<ParserError> = None;
+        let mut comma_used = false;
+
+        'parse_array_loop: loop {
+            if let Some(token) = tokens.next() {
+                match &token.value {
+                    Value::LeftBracket => match self.parse_array(tokens) {
+                        Ok(v) => {
+                            if array_contents.len() != 0 && !comma_used {
+                                parser_error = Some(ParserError {
+                                    code: ErrorCode::SyntaxError,
+                                    message: format!("Comma is required"),
+                                    position: token.position.clone(),
+                                });
+                                break 'parse_array_loop;
+                            }
+                            array_contents.push(v.clone());
+                        }
+                        Err(err) => {
+                            parser_error = Some(err);
+                            break 'parse_array_loop;
+                        }
+                    },
+                    Value::RightBracket => {
+                        break 'parse_array_loop;
+                    }
+                    Value::Comma => {
+                        if comma_used {
+                            parser_error = Some(ParserError {
+                                code: ErrorCode::SyntaxError,
+                                message: format!("Comma position is invalid"),
+                                position: token.position.clone(),
+                            });
+                            break 'parse_array_loop;
+                        }
+                        comma_used = true;
+                    }
+                    Value::Ident(value) => {
+                        let value = self.parse_value(&value, &token.position);
+                        match value {
+                            Ok(v) => {
+                                if array_contents.len() != 0 && !comma_used {
+                                    parser_error = Some(ParserError {
+                                        code: ErrorCode::SyntaxError,
+                                        message: format!("Comma is required"),
+                                        position: token.position.clone(),
+                                    });
+                                    break 'parse_array_loop;
+                                }
+                                array_contents.push(v.clone());
+                                comma_used = false;
+                            }
+                            Err(err) => {
+                                parser_error = Some(err);
+                                break 'parse_array_loop;
+                            }
+                        }
+                    }
+                    _ => {}
+                }
+            } else {
+                break 'parse_array_loop;
+            }
+        }
+
+        if let Some(err) = parser_error {
+            Err(err)
+        } else {
+            Ok(VariableValue::Array(array_contents))
+        }
+    }
+
     fn parse_ident(
         &self,
         value: String,
@@ -251,38 +300,11 @@ impl Parser {
         if var.name.is_none() && !equal_used {
             Ok(ParsedIdent::Name(value.clone()))
         } else if var.value.is_none() && *equal_used {
-            let var_value: VariableValue;
-            if value.starts_with('"') && value.ends_with('"') {
-                let mut str_value = value.clone();
-                str_value.remove(value.len() - 1);
-                str_value.remove(0);
-                var_value = VariableValue::String(str_value);
-            } else if value.starts_with('\'') && value.ends_with('\'') {
-                let mut str_value = value.clone();
-                str_value.remove(value.len() - 1);
-                str_value.remove(0);
-                if let Ok(c) = str_value.parse::<char>() {
-                    var_value = VariableValue::Char(c);
-                } else {
-                    return Err(ParserError {
-                        code: ErrorCode::MultipleCharacters,
-                        message: "Can't input multiple characters in char".to_string(),
-                        position: position.clone(),
-                    });
-                }
-            } else if is_num(value.clone()) {
-                var_value = VariableValue::Number(value.clone());
-            } else if let Ok(b) = value.parse::<bool>() {
-                var_value = VariableValue::Bool(b);
-            } else {
-                return Err(ParserError {
-                    code: ErrorCode::InvalidType,
-                    message: "Invalid type".to_string(),
-                    position: position.clone(),
-                });
+            let var_value = self.parse_value(&value, &position);
+            match var_value {
+                Ok(var_value) => Ok(ParsedIdent::Value(var_value)),
+                Err(err) => Err(err),
             }
-
-            Ok(ParsedIdent::Value(var_value))
         } else {
             Err(ParserError {
                 code: ErrorCode::SyntaxError,
@@ -290,6 +312,42 @@ impl Parser {
                     "The order must be variable name, equal sign, value, and semicolon.",
                     position
                 ),
+                position: position.clone(),
+            })
+        }
+    }
+
+    fn parse_value(
+        &self,
+        value: &String,
+        position: &Position,
+    ) -> Result<VariableValue, ParserError> {
+        if value.starts_with('"') && value.ends_with('"') {
+            let mut str_value = value.clone();
+            str_value.remove(value.len() - 1);
+            str_value.remove(0);
+            Ok(VariableValue::String(str_value))
+        } else if value.starts_with('\'') && value.ends_with('\'') {
+            let mut str_value = value.clone();
+            str_value.remove(value.len() - 1);
+            str_value.remove(0);
+            if let Ok(c) = str_value.parse::<char>() {
+                Ok(VariableValue::Char(c))
+            } else {
+                Err(ParserError {
+                    code: ErrorCode::MultipleCharacters,
+                    message: "Can't input multiple characters in char".to_string(),
+                    position: position.clone(),
+                })
+            }
+        } else if is_num(value.clone()) {
+            Ok(VariableValue::Number(value.clone()))
+        } else if let Ok(b) = value.parse::<bool>() {
+            Ok(VariableValue::Bool(b))
+        } else {
+            Err(ParserError {
+                code: ErrorCode::InvalidType,
+                message: "Invalid type".to_string(),
                 position: position.clone(),
             })
         }
