@@ -453,9 +453,13 @@ impl Parser {
         let mut array_contents = Vec::new();
         let mut parser_error: Option<ParserError> = None;
         let mut comma_used = false;
+        let mut array_closed = false;
+        let mut last_position = None;
 
         'parse_array_loop: loop {
             if let Some(token) = tokens.next() {
+                last_position = Some(token.position.clone());
+
                 match &token.value {
                     Value::LeftSquareBracket => match self.parse_array(tokens) {
                         Ok(v) => {
@@ -475,6 +479,7 @@ impl Parser {
                         }
                     },
                     Value::RightSquareBracket => {
+                        array_closed = true;
                         break 'parse_array_loop;
                     }
                     Value::Comma => {
@@ -538,6 +543,16 @@ impl Parser {
                 }
             } else {
                 break 'parse_array_loop;
+            }
+        }
+
+        if let Some(position) = last_position {
+            if !array_closed {
+                return Err(ParserError {
+                    code: ErrorCode::SyntaxError,
+                    message: "Array isn't closed".to_string(),
+                    position,
+                });
             }
         }
 
