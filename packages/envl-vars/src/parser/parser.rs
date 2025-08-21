@@ -488,6 +488,23 @@ impl Parser {
                         }
                         comma_used = true;
                     }
+                    Value::RightCurlyBracket => match self.parse_struct(tokens) {
+                        Ok(value) => {
+                            if array_contents.len() != 0 && !comma_used {
+                                parser_error = Some(ParserError {
+                                    code: ErrorCode::SyntaxError,
+                                    message: format!("Comma is required"),
+                                    position: token.position.clone(),
+                                });
+                                break 'parse_array_loop;
+                            }
+                            array_contents.push(value.clone());
+                        }
+                        Err(err) => {
+                            parser_error = Some(err);
+                            break 'parse_array_loop;
+                        }
+                    },
                     Value::Ident(value) => {
                         let value = self.parse_value(&value, &token.position);
                         match value {
@@ -509,7 +526,15 @@ impl Parser {
                             }
                         }
                     }
-                    _ => {}
+                    Value::Comment(_) => {}
+                    _ => {
+                        parser_error = Some(ParserError {
+                            code: ErrorCode::SyntaxError,
+                            message: "That syntax can't be used whithin a struct".to_string(),
+                            position: token.position.clone(),
+                        });
+                        break 'parse_array_loop;
+                    }
                 }
             } else {
                 break 'parse_array_loop;
