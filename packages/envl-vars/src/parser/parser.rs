@@ -77,7 +77,7 @@ impl Parser {
                 let value = &token.value;
                 let position = token.position.clone();
                 match value {
-                    Value::LeftBracket => match self.parse_array(&mut tokens) {
+                    Value::LeftSquareBracket => match self.parse_array(&mut tokens) {
                         Ok(v) => {
                             if var.name.is_some() && var.value.is_none() && equal_used {
                                 var = Var {
@@ -98,7 +98,7 @@ impl Parser {
                             break 'parse_loop;
                         }
                     },
-                    Value::RightBracket => {
+                    Value::RightSquareBracket => {
                         parser_error = Some(ParserError {
                             code: ErrorCode::SyntaxError,
                             message: format!("Use ] only when closing an array"),
@@ -214,7 +214,7 @@ impl Parser {
         'parse_array_loop: loop {
             if let Some(token) = tokens.next() {
                 match &token.value {
-                    Value::LeftBracket => match self.parse_array(tokens) {
+                    Value::LeftSquareBracket => match self.parse_array(tokens) {
                         Ok(v) => {
                             if array_contents.len() != 0 && !comma_used {
                                 parser_error = Some(ParserError {
@@ -231,7 +231,7 @@ impl Parser {
                             break 'parse_array_loop;
                         }
                     },
-                    Value::RightBracket => {
+                    Value::RightSquareBracket => {
                         break 'parse_array_loop;
                     }
                     Value::Comma => {

@@ -98,13 +98,13 @@ impl Lexer {
                 }
                 '[' => {
                     tokens.push(Token {
-                        value: Value::LeftBracket,
+                        value: Value::LeftSquareBracket,
                         position: position.clone(),
                     });
                 }
                 ']' => {
                     tokens.push(Token {
-                        value: Value::RightBracket,
+                        value: Value::RightSquareBracket,
                         position: position.clone(),
                     });
                 }
