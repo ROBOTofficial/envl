@@ -108,6 +108,24 @@ impl Lexer {
                         position: position.clone(),
                     });
                 }
+                '{' => {
+                    tokens.push(Token {
+                        value: Value::LeftCurlyBracket,
+                        position: position.clone(),
+                    });
+                }
+                '}' => {
+                    tokens.push(Token {
+                        value: Value::RightCurlyBracket,
+                        position: position.clone(),
+                    });
+                }
+                ':' => {
+                    tokens.push(Token {
+                        value: Value::Colon,
+                        position: position.clone(),
+                    });
+                }
                 ',' => {
                     tokens.push(Token {
                         value: Value::Comma,

@@ -127,6 +127,26 @@ mod test {
     }
 
     #[test]
+    fn struct_test() {
+        let tokens = generate_tokens("variable = { abc: 12345, efg: true };".to_string());
+        let expect_arr = vec![
+            Value::Ident("variable".to_string()),
+            Value::Equal,
+            Value::LeftCurlyBracket,
+            Value::Ident("abc".to_string()),
+            Value::Colon,
+            Value::Ident("12345".to_string()),
+            Value::Comma,
+            Value::Ident("efg".to_string()),
+            Value::Colon,
+            Value::Ident("true".to_string()),
+            Value::RightCurlyBracket,
+            Value::Semi,
+        ];
+        assert_eq!(tokens, expect_arr);
+    }
+
+    #[test]
     fn comment_test() {
         let tokens = generate_tokens("variable = 12345; //this is a comment".to_string());
         let expect_arr = vec![
