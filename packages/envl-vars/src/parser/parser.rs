@@ -1,4 +1,7 @@
-use std::{collections::HashSet, slice::Iter};
+use std::{
+    collections::{HashMap, HashSet},
+    slice::Iter,
+};
 
 use crate::{
     envl_vars_error_message,
@@ -106,6 +109,43 @@ impl Parser {
                         });
                         break 'parse_loop;
                     }
+                    Value::LeftCurlyBracket => match self.parse_struct(&mut tokens) {
+                        Ok(v) => {
+                            if var.name.is_some() && var.value.is_none() && equal_used {
+                                var = Var {
+                                    name: var.name,
+                                    value: Some(v.clone()),
+                                }
+                            } else {
+                                parser_error = Some(ParserError {
+                                    code: ErrorCode::SyntaxError,
+                                    message: format!("Write structs after the equal written"),
+                                    position: position.clone(),
+                                });
+                                break 'parse_loop;
+                            }
+                        }
+                        Err(err) => {
+                            parser_error = Some(err);
+                            break 'parse_loop;
+                        }
+                    },
+                    Value::RightCurlyBracket => {
+                        parser_error = Some(ParserError {
+                            code: ErrorCode::SyntaxError,
+                            message: "Use } only when closing an array".to_string(),
+                            position: position.clone(),
+                        });
+                        break 'parse_loop;
+                    }
+                    Value::Colon => {
+                        parser_error = Some(ParserError {
+                            code: ErrorCode::SyntaxError,
+                            message: format!("Colon position is invalid"),
+                            position: position.clone(),
+                        });
+                        break 'parse_loop;
+                    }
                     Value::Comma => {
                         parser_error = Some(ParserError {
                             code: ErrorCode::SyntaxError,
@@ -204,6 +244,209 @@ impl Parser {
         }
 
         None
+    }
+
+    fn parse_struct<'a>(&self, tokens: &mut Iter<'a, Token>) -> Result<VariableValue, ParserError> {
+        let mut hm = HashMap::new();
+        let mut parser_error = None;
+        let mut comma_used = false;
+        let mut colon_used = false;
+        let mut struct_closed = false;
+        let mut last_position = None;
+        let mut element_name = None;
+
+        macro_rules! clean {
+            () => {
+                comma_used = false;
+                colon_used = false;
+                element_name = None;
+            };
+        }
+
+        'parse_struct_loop: loop {
+            if let Some(token) = tokens.next() {
+                macro_rules! insert {
+                    ($name: expr, $value: expr) => {
+                        if hm.get(&$name).is_some() {
+                            parser_error = Some(ParserError {
+                                code: ErrorCode::DuplicateVars,
+                                message: format!("{} is duplicated", $name),
+                                position: token.position.clone(),
+                            });
+                            break 'parse_struct_loop;
+                        }
+                        hm.insert($name, $value);
+                    };
+                }
+
+                last_position = Some(token.position.clone());
+
+                match &token.value {
+                    Value::LeftCurlyBracket => match self.parse_struct(tokens) {
+                        Ok(value) => match element_name {
+                            Some(name) => {
+                                if !colon_used {
+                                    parser_error = Some(ParserError {
+                                        code: ErrorCode::SyntaxError,
+                                        message: "Colon is required".to_string(),
+                                        position: token.position.clone(),
+                                    });
+                                    break 'parse_struct_loop;
+                                }
+                                if hm.len() != 0 && !comma_used {
+                                    parser_error = Some(ParserError {
+                                        code: ErrorCode::SyntaxError,
+                                        message: "Comma is required".to_string(),
+                                        position: token.position.clone(),
+                                    });
+                                    break 'parse_struct_loop;
+                                }
+                                insert!(name, value);
+                                clean!();
+                            }
+                            None => {
+                                parser_error = Some(ParserError {
+                                    code: ErrorCode::SyntaxError,
+                                    message: "Item name not set".to_string(),
+                                    position: token.position.clone(),
+                                });
+                                break 'parse_struct_loop;
+                            }
+                        },
+                        Err(err) => {
+                            parser_error = Some(err);
+                            break 'parse_struct_loop;
+                        }
+                    },
+                    Value::RightCurlyBracket => {
+                        struct_closed = true;
+                        break 'parse_struct_loop;
+                    }
+                    Value::LeftSquareBracket => match self.parse_array(tokens) {
+                        Ok(value) => {
+                            if let Some(name) = element_name {
+                                if !colon_used {
+                                    parser_error = Some(ParserError {
+                                        code: ErrorCode::SyntaxError,
+                                        message: "Colon is required".to_string(),
+                                        position: token.position.clone(),
+                                    });
+                                    break 'parse_struct_loop;
+                                }
+                                if hm.len() != 0 && !comma_used {
+                                    parser_error = Some(ParserError {
+                                        code: ErrorCode::SyntaxError,
+                                        message: "Comma is required".to_string(),
+                                        position: token.position.clone(),
+                                    });
+                                    break 'parse_struct_loop;
+                                }
+                                insert!(name, value);
+                                clean!();
+                            } else {
+                                parser_error = Some(ParserError {
+                                    code: ErrorCode::SyntaxError,
+                                    message: "Can't write an array at that position".to_string(),
+                                    position: token.position.clone(),
+                                });
+                                break 'parse_struct_loop;
+                            }
+                        }
+                        Err(err) => {
+                            parser_error = Some(err);
+                            break 'parse_struct_loop;
+                        }
+                    },
+                    Value::Comma => {
+                        if comma_used {
+                            parser_error = Some(ParserError {
+                                code: ErrorCode::SyntaxError,
+                                message: "Comma position is invalid".to_string(),
+                                position: token.position.clone(),
+                            });
+                            break 'parse_struct_loop;
+                        }
+                        comma_used = true;
+                    }
+                    Value::Colon => {
+                        if colon_used {
+                            parser_error = Some(ParserError {
+                                code: ErrorCode::SyntaxError,
+                                message: "Colon position is invalid".to_string(),
+                                position: token.position.clone(),
+                            });
+                            break 'parse_struct_loop;
+                        }
+                        colon_used = true;
+                    }
+                    Value::Ident(v) => match element_name.clone() {
+                        None => {
+                            element_name = Some(v.clone());
+                        }
+                        Some(name) if colon_used => {
+                            if hm.len() != 0 && !comma_used {
+                                parser_error = Some(ParserError {
+                                    code: ErrorCode::SyntaxError,
+                                    message: "Comma is required".to_string(),
+                                    position: token.position.clone(),
+                                });
+                                break 'parse_struct_loop;
+                            }
+                            match self.parse_value(v, &token.position.clone()) {
+                                Ok(value) => {
+                                    insert!(name, value);
+                                    clean!();
+                                }
+                                Err(err) => {
+                                    parser_error = Some(err);
+                                    break 'parse_struct_loop;
+                                }
+                            }
+                        }
+                        _ => {
+                            let (code, message) = if !colon_used {
+                                (ErrorCode::SyntaxError, "Colon is required".to_string())
+                            } else {
+                                (ErrorCode::SyntaxError, "Item name not set".to_string())
+                            };
+                            parser_error = Some(ParserError {
+                                code,
+                                message,
+                                position: token.position.clone(),
+                            });
+                            break 'parse_struct_loop;
+                        }
+                    },
+                    Value::Comment(_) => {}
+                    _ => {
+                        parser_error = Some(ParserError {
+                            code: ErrorCode::SyntaxError,
+                            message: "That syntax can't be used whithin a struct".to_string(),
+                            position: token.position.clone(),
+                        });
+                        break 'parse_struct_loop;
+                    }
+                }
+            } else {
+                break 'parse_struct_loop;
+            }
+        }
+
+        if let Some(position) = last_position {
+            if !struct_closed {
+                return Err(ParserError {
+                    code: ErrorCode::SyntaxError,
+                    message: "Struct isn't closed".to_string(),
+                    position,
+                });
+            }
+        }
+
+        if let Some(err) = parser_error {
+            Err(err)
+        } else {
+            Ok(VariableValue::Struct(hm))
+        }
     }
 
     fn parse_array<'a>(&self, tokens: &mut Iter<'a, Token>) -> Result<VariableValue, ParserError> {

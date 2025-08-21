@@ -1,5 +1,7 @@
 #[cfg(test)]
 mod test {
+    use std::collections::HashMap;
+
     use crate::{
         lexer::lexer::Lexer,
         misc::variable::{Variable, VariableValue, VariableWithoutPosition},
@@ -128,6 +130,25 @@ mod test {
                         "456".to_string()
                     )])]),
                 ])
+            }]
+        );
+    }
+
+    #[test]
+    fn struct_test() {
+        let result = gen_vars("variable = { abc: 12345, efg: true };".to_string());
+        let hm = HashMap::from([
+            (
+                "abc".to_string(),
+                VariableValue::Number("12345".to_string()),
+            ),
+            ("efg".to_string(), VariableValue::Bool(true)),
+        ]);
+        assert_eq!(
+            result,
+            vec![VariableWithoutPosition {
+                name: "variable".to_string(),
+                value: VariableValue::Struct(hm)
             }]
         );
     }

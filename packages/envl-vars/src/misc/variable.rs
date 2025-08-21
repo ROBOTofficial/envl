@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::misc::position::Position;
 
 #[derive(Clone, PartialEq, Debug)]
@@ -7,6 +9,7 @@ pub enum VariableValue {
     Bool(bool),
     Char(char),
     Array(Vec<VariableValue>),
+    Struct(HashMap<String, VariableValue>),
 }
 
 #[derive(Debug)]
