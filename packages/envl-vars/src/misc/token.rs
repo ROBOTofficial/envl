@@ -2,10 +2,12 @@ use crate::misc::position::Position;
 
 #[derive(Debug, PartialEq)]
 pub enum Value {
-    Ident(String),
     Comment(String),
+    Ident(String),
     RightSquareBracket,
     LeftSquareBracket,
+    RightCurlyBracket,
+    LeftCurlyBracket,
     Comma,
     Colon,
     Equal,
