@@ -137,19 +137,56 @@ mod test {
     #[test]
     fn struct_test() {
         let result = gen_vars("variable = { abc: 12345, efg: true };".to_string());
-        let hm = HashMap::from([
-            (
-                "abc".to_string(),
-                VariableValue::Number("12345".to_string()),
-            ),
-            ("efg".to_string(), VariableValue::Bool(true)),
-        ]);
         assert_eq!(
             result,
             vec![VariableWithoutPosition {
                 name: "variable".to_string(),
-                value: VariableValue::Struct(hm)
+                value: VariableValue::Struct(HashMap::from([
+                    (
+                        "abc".to_string(),
+                        VariableValue::Number("12345".to_string()),
+                    ),
+                    ("efg".to_string(), VariableValue::Bool(true)),
+                ]))
             }]
+        );
+    }
+
+    #[test]
+    fn struct_and_array_test() {
+        let result = gen_vars(
+            "variable = { abc: { efg: [ true ] }, hij: 12345 }; variable2 = [ { abc: true }, 12345 ];".to_string()
+        );
+        assert_eq!(
+            result,
+            vec![
+                VariableWithoutPosition {
+                    name: "variable".to_string(),
+                    value: VariableValue::Struct(HashMap::from([
+                        (
+                            "abc".to_string(),
+                            VariableValue::Struct(HashMap::from([(
+                                "efg".to_string(),
+                                VariableValue::Array(vec![VariableValue::Bool(true)])
+                            )])),
+                        ),
+                        (
+                            "hij".to_string(),
+                            VariableValue::Number("12345".to_string())
+                        ),
+                    ]))
+                },
+                VariableWithoutPosition {
+                    name: "variable2".to_string(),
+                    value: VariableValue::Array(vec![
+                        VariableValue::Struct(HashMap::from([(
+                            "abc".to_string(),
+                            VariableValue::Bool(true)
+                        )])),
+                        VariableValue::Number("12345".to_string())
+                    ])
+                }
+            ]
         );
     }
 

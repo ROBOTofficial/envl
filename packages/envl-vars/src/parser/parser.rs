@@ -432,19 +432,18 @@ impl Parser {
             }
         }
 
-        if let Some(position) = last_position {
-            if !struct_closed {
-                return Err(ParserError {
-                    code: ErrorCode::SyntaxError,
-                    message: "Struct isn't closed".to_string(),
-                    position,
-                });
-            }
-        }
-
         if let Some(err) = parser_error {
             Err(err)
         } else {
+            if let Some(position) = last_position {
+                if !struct_closed {
+                    return Err(ParserError {
+                        code: ErrorCode::SyntaxError,
+                        message: "Struct isn't closed".to_string(),
+                        position,
+                    });
+                }
+            }
             Ok(VariableValue::Struct(hm))
         }
     }
@@ -472,6 +471,7 @@ impl Parser {
                                 break 'parse_array_loop;
                             }
                             array_contents.push(v.clone());
+                            comma_used = false;
                         }
                         Err(err) => {
                             parser_error = Some(err);
@@ -493,7 +493,7 @@ impl Parser {
                         }
                         comma_used = true;
                     }
-                    Value::RightCurlyBracket => match self.parse_struct(tokens) {
+                    Value::LeftCurlyBracket => match self.parse_struct(tokens) {
                         Ok(value) => {
                             if array_contents.len() != 0 && !comma_used {
                                 parser_error = Some(ParserError {
@@ -504,6 +504,7 @@ impl Parser {
                                 break 'parse_array_loop;
                             }
                             array_contents.push(value.clone());
+                            comma_used = false;
                         }
                         Err(err) => {
                             parser_error = Some(err);
@@ -546,19 +547,18 @@ impl Parser {
             }
         }
 
-        if let Some(position) = last_position {
-            if !array_closed {
-                return Err(ParserError {
-                    code: ErrorCode::SyntaxError,
-                    message: "Array isn't closed".to_string(),
-                    position,
-                });
-            }
-        }
-
         if let Some(err) = parser_error {
             Err(err)
         } else {
+            if let Some(position) = last_position {
+                if !array_closed {
+                    return Err(ParserError {
+                        code: ErrorCode::SyntaxError,
+                        message: "Array isn't closed".to_string(),
+                        position,
+                    });
+                }
+            }
             Ok(VariableValue::Array(array_contents))
         }
     }
