@@ -4,19 +4,24 @@ use std::{
 };
 
 use crate::{
-    envl_vars_error_message,
     misc::{
         num::is_num,
         position::Position,
         token::{Token, Value},
         variable::{Variable, VariableValue},
     },
-    parser::error::ErrorCode,
+    parser::error::{
+        duplicate_error, ErrorKind, ARRAY_AFTER_EQUAL, ARRAY_CLOSED, ARRAY_INVALID_CLOSE,
+        COLON_POSITION, COLON_REQUIRED, COMMA_POSITION, COMMA_REQUIRED, DIFFERENT_ORDER,
+        INVALID_ARRAY_POSITION, INVALID_TYPE, ITEM_NAME_NOT_SET, MULTIPLE_CHAR, STRUCT_AFTER_EQUAL,
+        STRUCT_CLOSED, STRUCT_INVALID_CLOSE, SYNTAX_IN_ARRAY, SYNTAX_IN_STRUCT,
+    },
 };
 
 #[derive(Debug)]
 pub struct ParserError {
-    pub code: ErrorCode,
+    pub code: u32,
+    pub kind: ErrorKind,
     pub message: String,
     pub position: Position,
 }
@@ -63,13 +68,10 @@ impl Parser {
 
         macro_rules! error {
             ($pos: ident) => {
-                let message = envl_vars_error_message!(
-                    "The order must be variable name, equal sign, value, and semicolon.",
-                    $pos
-                );
                 parser_error = Some(ParserError {
-                    code: ErrorCode::SyntaxError,
-                    message,
+                    kind: DIFFERENT_ORDER.kind,
+                    code: DIFFERENT_ORDER.code,
+                    message: DIFFERENT_ORDER.message.to_string(),
                     position: $pos,
                 })
             };
@@ -89,8 +91,9 @@ impl Parser {
                                 }
                             } else {
                                 parser_error = Some(ParserError {
-                                    code: ErrorCode::SyntaxError,
-                                    message: format!("Write arrays after the equal written"),
+                                    kind: ARRAY_AFTER_EQUAL.kind,
+                                    code: ARRAY_AFTER_EQUAL.code,
+                                    message: ARRAY_AFTER_EQUAL.message.to_string(),
                                     position: position.clone(),
                                 });
                                 break 'parse_loop;
@@ -103,8 +106,9 @@ impl Parser {
                     },
                     Value::RightSquareBracket => {
                         parser_error = Some(ParserError {
-                            code: ErrorCode::SyntaxError,
-                            message: format!("Use ] only when closing an array"),
+                            kind: ARRAY_INVALID_CLOSE.kind,
+                            code: ARRAY_INVALID_CLOSE.code,
+                            message: ARRAY_INVALID_CLOSE.message.to_string(),
                             position: position.clone(),
                         });
                         break 'parse_loop;
@@ -118,8 +122,9 @@ impl Parser {
                                 }
                             } else {
                                 parser_error = Some(ParserError {
-                                    code: ErrorCode::SyntaxError,
-                                    message: format!("Write structs after the equal written"),
+                                    kind: STRUCT_AFTER_EQUAL.kind,
+                                    code: STRUCT_AFTER_EQUAL.code,
+                                    message: STRUCT_AFTER_EQUAL.message.to_string(),
                                     position: position.clone(),
                                 });
                                 break 'parse_loop;
@@ -132,24 +137,27 @@ impl Parser {
                     },
                     Value::RightCurlyBracket => {
                         parser_error = Some(ParserError {
-                            code: ErrorCode::SyntaxError,
-                            message: "Use } only when closing an array".to_string(),
+                            kind: STRUCT_INVALID_CLOSE.kind,
+                            code: STRUCT_INVALID_CLOSE.code,
+                            message: STRUCT_INVALID_CLOSE.message.to_string(),
                             position: position.clone(),
                         });
                         break 'parse_loop;
                     }
                     Value::Colon => {
                         parser_error = Some(ParserError {
-                            code: ErrorCode::SyntaxError,
-                            message: format!("Colon position is invalid"),
+                            kind: COLON_POSITION.kind,
+                            code: COLON_POSITION.code,
+                            message: COLON_POSITION.message.to_string(),
                             position: position.clone(),
                         });
                         break 'parse_loop;
                     }
                     Value::Comma => {
                         parser_error = Some(ParserError {
-                            code: ErrorCode::SyntaxError,
-                            message: format!("Comma position is invalid"),
+                            kind: COMMA_POSITION.kind,
+                            code: COMMA_POSITION.code,
+                            message: COMMA_POSITION.message.to_string(),
                             position: position.clone(),
                         });
                         break 'parse_loop;
@@ -234,10 +242,11 @@ impl Parser {
 
         for var in vars {
             if !hs.insert(var.name.clone()) {
-                let message = format!("{} is duplicated", &var.name);
+                let err = duplicate_error(&var.name);
                 return Some(ParserError {
-                    code: ErrorCode::DuplicateVars,
-                    message,
+                    kind: err.kind,
+                    code: err.code,
+                    message: err.message.to_string(),
                     position: var.position.clone(),
                 });
             }
@@ -268,9 +277,11 @@ impl Parser {
                 macro_rules! insert {
                     ($name: expr, $value: expr) => {
                         if hm.get(&$name).is_some() {
+                            let err = duplicate_error(&$name);
                             parser_error = Some(ParserError {
-                                code: ErrorCode::DuplicateVars,
-                                message: format!("{} is duplicated", $name),
+                                kind: err.kind,
+                                code: err.code,
+                                message: err.message.to_string(),
                                 position: token.position.clone(),
                             });
                             break 'parse_struct_loop;
@@ -287,16 +298,18 @@ impl Parser {
                             Some(name) => {
                                 if !colon_used {
                                     parser_error = Some(ParserError {
-                                        code: ErrorCode::SyntaxError,
-                                        message: "Colon is required".to_string(),
+                                        kind: COLON_REQUIRED.kind,
+                                        code: COLON_REQUIRED.code,
+                                        message: COLON_REQUIRED.message.to_string(),
                                         position: token.position.clone(),
                                     });
                                     break 'parse_struct_loop;
                                 }
                                 if hm.len() != 0 && !comma_used {
                                     parser_error = Some(ParserError {
-                                        code: ErrorCode::SyntaxError,
-                                        message: "Comma is required".to_string(),
+                                        kind: COMMA_REQUIRED.kind,
+                                        code: COMMA_REQUIRED.code,
+                                        message: COMMA_REQUIRED.message.to_string(),
                                         position: token.position.clone(),
                                     });
                                     break 'parse_struct_loop;
@@ -306,8 +319,9 @@ impl Parser {
                             }
                             None => {
                                 parser_error = Some(ParserError {
-                                    code: ErrorCode::SyntaxError,
-                                    message: "Item name not set".to_string(),
+                                    kind: ITEM_NAME_NOT_SET.kind,
+                                    code: ITEM_NAME_NOT_SET.code,
+                                    message: ITEM_NAME_NOT_SET.message.to_string(),
                                     position: token.position.clone(),
                                 });
                                 break 'parse_struct_loop;
@@ -327,16 +341,18 @@ impl Parser {
                             if let Some(name) = element_name {
                                 if !colon_used {
                                     parser_error = Some(ParserError {
-                                        code: ErrorCode::SyntaxError,
-                                        message: "Colon is required".to_string(),
+                                        kind: COLON_REQUIRED.kind,
+                                        code: COLON_REQUIRED.code,
+                                        message: COLON_REQUIRED.message.to_string(),
                                         position: token.position.clone(),
                                     });
                                     break 'parse_struct_loop;
                                 }
                                 if hm.len() != 0 && !comma_used {
                                     parser_error = Some(ParserError {
-                                        code: ErrorCode::SyntaxError,
-                                        message: "Comma is required".to_string(),
+                                        kind: COMMA_REQUIRED.kind,
+                                        code: COMMA_REQUIRED.code,
+                                        message: COMMA_REQUIRED.message.to_string(),
                                         position: token.position.clone(),
                                     });
                                     break 'parse_struct_loop;
@@ -345,8 +361,9 @@ impl Parser {
                                 clean!();
                             } else {
                                 parser_error = Some(ParserError {
-                                    code: ErrorCode::SyntaxError,
-                                    message: "Can't write an array at that position".to_string(),
+                                    kind: INVALID_ARRAY_POSITION.kind,
+                                    code: INVALID_ARRAY_POSITION.code,
+                                    message: INVALID_ARRAY_POSITION.message.to_string(),
                                     position: token.position.clone(),
                                 });
                                 break 'parse_struct_loop;
@@ -360,8 +377,9 @@ impl Parser {
                     Value::Comma => {
                         if comma_used {
                             parser_error = Some(ParserError {
-                                code: ErrorCode::SyntaxError,
-                                message: "Comma position is invalid".to_string(),
+                                kind: COMMA_POSITION.kind,
+                                code: COMMA_POSITION.code,
+                                message: COMMA_POSITION.message.to_string(),
                                 position: token.position.clone(),
                             });
                             break 'parse_struct_loop;
@@ -371,8 +389,9 @@ impl Parser {
                     Value::Colon => {
                         if colon_used {
                             parser_error = Some(ParserError {
-                                code: ErrorCode::SyntaxError,
-                                message: "Colon position is invalid".to_string(),
+                                kind: COLON_POSITION.kind,
+                                code: COLON_POSITION.code,
+                                message: COLON_POSITION.message.to_string(),
                                 position: token.position.clone(),
                             });
                             break 'parse_struct_loop;
@@ -386,8 +405,9 @@ impl Parser {
                         Some(name) if colon_used => {
                             if hm.len() != 0 && !comma_used {
                                 parser_error = Some(ParserError {
-                                    code: ErrorCode::SyntaxError,
-                                    message: "Comma is required".to_string(),
+                                    kind: COMMA_REQUIRED.kind,
+                                    code: COMMA_REQUIRED.code,
+                                    message: COMMA_REQUIRED.message.to_string(),
                                     position: token.position.clone(),
                                 });
                                 break 'parse_struct_loop;
@@ -404,13 +424,22 @@ impl Parser {
                             }
                         }
                         _ => {
-                            let (code, message) = if !colon_used {
-                                (ErrorCode::SyntaxError, "Colon is required".to_string())
+                            let (code, kind, message) = if !colon_used {
+                                (
+                                    COLON_REQUIRED.code,
+                                    COLON_REQUIRED.kind,
+                                    COLON_REQUIRED.message.to_string(),
+                                )
                             } else {
-                                (ErrorCode::SyntaxError, "Item name not set".to_string())
+                                (
+                                    ITEM_NAME_NOT_SET.code,
+                                    ITEM_NAME_NOT_SET.kind,
+                                    ITEM_NAME_NOT_SET.message.to_string(),
+                                )
                             };
                             parser_error = Some(ParserError {
                                 code,
+                                kind,
                                 message,
                                 position: token.position.clone(),
                             });
@@ -420,8 +449,9 @@ impl Parser {
                     Value::Comment(_) => {}
                     _ => {
                         parser_error = Some(ParserError {
-                            code: ErrorCode::SyntaxError,
-                            message: "That syntax can't be used whithin a struct".to_string(),
+                            kind: SYNTAX_IN_STRUCT.kind,
+                            code: SYNTAX_IN_STRUCT.code,
+                            message: SYNTAX_IN_STRUCT.message.to_string(),
                             position: token.position.clone(),
                         });
                         break 'parse_struct_loop;
@@ -438,8 +468,9 @@ impl Parser {
             if let Some(position) = last_position {
                 if !struct_closed {
                     return Err(ParserError {
-                        code: ErrorCode::SyntaxError,
-                        message: "Struct isn't closed".to_string(),
+                        kind: STRUCT_CLOSED.kind,
+                        code: STRUCT_CLOSED.code,
+                        message: STRUCT_CLOSED.message.to_string(),
                         position,
                     });
                 }
@@ -464,8 +495,9 @@ impl Parser {
                         Ok(v) => {
                             if array_contents.len() != 0 && !comma_used {
                                 parser_error = Some(ParserError {
-                                    code: ErrorCode::SyntaxError,
-                                    message: format!("Comma is required"),
+                                    kind: COMMA_REQUIRED.kind,
+                                    code: COMMA_REQUIRED.code,
+                                    message: COMMA_REQUIRED.message.to_string(),
                                     position: token.position.clone(),
                                 });
                                 break 'parse_array_loop;
@@ -485,8 +517,9 @@ impl Parser {
                     Value::Comma => {
                         if comma_used {
                             parser_error = Some(ParserError {
-                                code: ErrorCode::SyntaxError,
-                                message: format!("Comma position is invalid"),
+                                kind: COMMA_POSITION.kind,
+                                code: COMMA_POSITION.code,
+                                message: COMMA_POSITION.message.to_string(),
                                 position: token.position.clone(),
                             });
                             break 'parse_array_loop;
@@ -497,8 +530,9 @@ impl Parser {
                         Ok(value) => {
                             if array_contents.len() != 0 && !comma_used {
                                 parser_error = Some(ParserError {
-                                    code: ErrorCode::SyntaxError,
-                                    message: format!("Comma is required"),
+                                    kind: COMMA_REQUIRED.kind,
+                                    code: COMMA_REQUIRED.code,
+                                    message: COMMA_REQUIRED.message.to_string(),
                                     position: token.position.clone(),
                                 });
                                 break 'parse_array_loop;
@@ -517,8 +551,9 @@ impl Parser {
                             Ok(v) => {
                                 if array_contents.len() != 0 && !comma_used {
                                     parser_error = Some(ParserError {
-                                        code: ErrorCode::SyntaxError,
-                                        message: format!("Comma is required"),
+                                        kind: COMMA_REQUIRED.kind,
+                                        code: COMMA_REQUIRED.code,
+                                        message: COMMA_REQUIRED.message.to_string(),
                                         position: token.position.clone(),
                                     });
                                     break 'parse_array_loop;
@@ -535,8 +570,9 @@ impl Parser {
                     Value::Comment(_) => {}
                     _ => {
                         parser_error = Some(ParserError {
-                            code: ErrorCode::SyntaxError,
-                            message: "That syntax can't be used whithin a struct".to_string(),
+                            kind: SYNTAX_IN_ARRAY.kind,
+                            code: SYNTAX_IN_ARRAY.code,
+                            message: SYNTAX_IN_ARRAY.message.to_string(),
                             position: token.position.clone(),
                         });
                         break 'parse_array_loop;
@@ -553,8 +589,9 @@ impl Parser {
             if let Some(position) = last_position {
                 if !array_closed {
                     return Err(ParserError {
-                        code: ErrorCode::SyntaxError,
-                        message: "Array isn't closed".to_string(),
+                        kind: ARRAY_CLOSED.kind,
+                        code: ARRAY_CLOSED.code,
+                        message: ARRAY_CLOSED.message.to_string(),
                         position,
                     });
                 }
@@ -572,11 +609,9 @@ impl Parser {
     ) -> Result<ParsedIdent, ParserError> {
         if var.name.is_some() && var.value.is_some() {
             return Err(ParserError {
-                code: ErrorCode::SyntaxError,
-                message: envl_vars_error_message!(
-                    "The order must be variable name, equal sign, value, and semicolon.",
-                    position
-                ),
+                kind: DIFFERENT_ORDER.kind,
+                code: DIFFERENT_ORDER.code,
+                message: DIFFERENT_ORDER.message.to_string(),
                 position: position.clone(),
             });
         }
@@ -590,11 +625,9 @@ impl Parser {
             }
         } else {
             Err(ParserError {
-                code: ErrorCode::SyntaxError,
-                message: envl_vars_error_message!(
-                    "The order must be variable name, equal sign, value, and semicolon.",
-                    position
-                ),
+                kind: DIFFERENT_ORDER.kind,
+                code: DIFFERENT_ORDER.code,
+                message: DIFFERENT_ORDER.message.to_string(),
                 position: position.clone(),
             })
         }
@@ -618,8 +651,9 @@ impl Parser {
                 Ok(VariableValue::Char(c))
             } else {
                 Err(ParserError {
-                    code: ErrorCode::MultipleCharacters,
-                    message: "Can't input multiple characters in char".to_string(),
+                    kind: MULTIPLE_CHAR.kind,
+                    code: MULTIPLE_CHAR.code,
+                    message: MULTIPLE_CHAR.message.to_string(),
                     position: position.clone(),
                 })
             }
@@ -629,8 +663,9 @@ impl Parser {
             Ok(VariableValue::Bool(b))
         } else {
             Err(ParserError {
-                code: ErrorCode::InvalidType,
-                message: "Invalid type".to_string(),
+                kind: INVALID_TYPE.kind,
+                code: INVALID_TYPE.code,
+                message: INVALID_TYPE.message.to_string(),
                 position: position.clone(),
             })
         }

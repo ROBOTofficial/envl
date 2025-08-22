@@ -6,7 +6,7 @@ mod test {
         lexer::lexer::Lexer,
         misc::variable::{Variable, VariableValue, VariableWithoutPosition},
         parser::{
-            error::ErrorCode,
+            error::ErrorKind,
             parser::{Parser, ParserError},
         },
     };
@@ -207,7 +207,7 @@ mod test {
         let result = gen_parsed_vars("variable = \"aiueo';".to_string());
         assert!(result.is_err());
         if let Err(err) = result {
-            assert_eq!(err.code, ErrorCode::InvalidType);
+            assert_eq!(err.kind, ErrorKind::InvalidType);
         }
     }
 
@@ -216,7 +216,7 @@ mod test {
         let result = gen_parsed_vars("variable = 12345; variable = \"12345\";".to_string());
         assert!(result.is_err());
         if let Err(err) = result {
-            assert_eq!(err.code, ErrorCode::DuplicateVars);
+            assert_eq!(err.kind, ErrorKind::DuplicateVars);
         }
     }
 
@@ -225,7 +225,7 @@ mod test {
         let result = gen_parsed_vars("variable = aiueo;".to_string());
         assert!(result.is_err());
         if let Err(err) = result {
-            assert_eq!(err.code, ErrorCode::InvalidType);
+            assert_eq!(err.kind, ErrorKind::InvalidType);
         }
     }
 
@@ -234,7 +234,7 @@ mod test {
         let result = gen_parsed_vars("variable = 'char';".to_string());
         assert!(result.is_err());
         if let Err(err) = result {
-            assert_eq!(err.code, ErrorCode::MultipleCharacters);
+            assert_eq!(err.kind, ErrorKind::MultipleCharacters);
         }
     }
 }
