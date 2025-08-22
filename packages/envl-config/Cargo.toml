@@ -1,5 +1,5 @@
 [package]
-name = "envl-settings"
+name = "envl-config"
 version = "0.1.0"
 repository.workspace = true
 license.workspace = true
