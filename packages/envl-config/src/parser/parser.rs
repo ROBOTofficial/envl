@@ -1,3 +1,11 @@
-pub struct Parser {}
+use crate::misc::token::Token;
 
-impl Parser {}
+pub struct Parser {
+    pub tokens: Vec<Token>,
+}
+
+impl Parser {
+    pub fn new(tokens: Vec<Token>) -> Self {
+        Self { tokens }
+    }
+}
