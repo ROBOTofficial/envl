@@ -1,0 +1,5 @@
+settings {
+    envl_file_path = "test.envl";
+}
+
+vars {}

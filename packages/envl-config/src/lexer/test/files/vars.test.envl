@@ -1,0 +1,10 @@
+settings {}
+
+vars {
+    a: string,
+    b: char,
+    c: float,
+    d: int,
+    e: uint,
+    f: bool
+}
