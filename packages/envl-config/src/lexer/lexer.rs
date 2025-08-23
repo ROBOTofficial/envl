@@ -165,6 +165,18 @@ impl Lexer {
                         continue 'lexer_loop;
                     }
                 }
+                '<' => {
+                    tokens.push(Token {
+                        value: Value::LeftShift,
+                        position: position.clone(),
+                    });
+                }
+                '>' => {
+                    tokens.push(Token {
+                        value: Value::RightShift,
+                        position: position.clone(),
+                    });
+                }
                 other => {
                     if other.is_whitespace() && !in_quote && !is_comment {
                         if !current_token.is_empty() {

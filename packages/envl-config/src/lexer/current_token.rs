@@ -14,6 +14,8 @@ impl Lexer {
             "float" => Value::Type(Type::Float),
             "settings" => Value::Settings,
             "vars" => Value::Vars,
+            "struct" => Value::Struct,
+            "Array" => Value::Array,
             other => Value::Ident(other.to_string()),
         }
     }

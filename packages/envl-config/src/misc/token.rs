@@ -11,11 +11,15 @@ pub enum Value {
     LeftCurlyBracket,
     RightParentheses,
     LeftParentheses,
+    RightShift,
+    LeftShift,
     Settings,
-    Vars,
+    Struct,
+    Array,
     Comma,
     Colon,
     Equal,
+    Vars,
     Semi,
 }
 

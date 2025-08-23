@@ -6,5 +6,9 @@ vars {
     c: float,
     d: int,
     e: uint,
-    f: bool
+    f: bool,
+    g: Array<int>,
+    h: struct {
+        a: bool
+    }
 }
