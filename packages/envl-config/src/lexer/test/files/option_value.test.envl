@@ -1,0 +1,12 @@
+settings {}
+
+vars {
+    a: int (
+        default: 123,
+        actions: 456
+    ),
+    b: bool (
+        default: false,
+        actions: true
+    )
+}

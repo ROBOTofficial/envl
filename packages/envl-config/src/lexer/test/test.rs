@@ -87,4 +87,45 @@ mod test {
             ]
         );
     }
+
+    #[test]
+    fn option_value_test() {
+        let tokens = generate_tokens(include_str!("./files/option_value.test.envl").to_string());
+        assert_eq!(
+            tokens,
+            vec![
+                Value::Settings,
+                Value::LeftCurlyBracket,
+                Value::RightCurlyBracket,
+                Value::Vars,
+                Value::LeftCurlyBracket,
+                Value::Ident("a".to_string()),
+                Value::Colon,
+                Value::Type(Type::Int),
+                Value::LeftParentheses,
+                Value::Ident("default".to_string()),
+                Value::Colon,
+                Value::Ident("123".to_string()),
+                Value::Comma,
+                Value::Ident("actions".to_string()),
+                Value::Colon,
+                Value::Ident("456".to_string()),
+                Value::RightParentheses,
+                Value::Comma,
+                Value::Ident("b".to_string()),
+                Value::Colon,
+                Value::Type(Type::Bool),
+                Value::LeftParentheses,
+                Value::Ident("default".to_string()),
+                Value::Colon,
+                Value::Ident("false".to_string()),
+                Value::Comma,
+                Value::Ident("actions".to_string()),
+                Value::Colon,
+                Value::Ident("true".to_string()),
+                Value::RightParentheses,
+                Value::RightCurlyBracket,
+            ]
+        );
+    }
 }
