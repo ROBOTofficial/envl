@@ -168,9 +168,8 @@ impl Lexer {
                 other => {
                     if other.is_whitespace() && !in_quote && !is_comment {
                         if !current_token.is_empty() {
-                            let identifier = Value::Ident(current_token.clone());
                             tokens.push(Token {
-                                value: identifier,
+                                value: self.lex_current_token(current_token.clone()),
                                 position: position.clone(),
                             });
                             current_token.clear();
@@ -183,11 +182,10 @@ impl Lexer {
             }
 
             if !is_comment && !in_quote && !is_others && !current_token.is_empty() {
-                let identifier = Value::Ident(current_token.clone());
                 tokens.insert(
                     tokens.len() - 1,
                     Token {
-                        value: identifier,
+                        value: self.lex_current_token(current_token.clone()),
                         position,
                     },
                 );
