@@ -31,7 +31,7 @@ impl Parser {
                     position: position.clone(),
                 })
             }
-        } else if is_num(value.clone()) {
+        } else if is_num(value.clone(), true) {
             Ok(VariableValue::Number(value.clone()))
         } else if let Ok(b) = value.parse::<bool>() {
             Ok(VariableValue::Bool(b))

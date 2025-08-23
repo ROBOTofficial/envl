@@ -42,6 +42,18 @@ mod test {
     }
 
     #[test]
+    fn signed_number_test() {
+        let result = gen_vars("variable = -12345;".to_string());
+        assert_eq!(
+            result,
+            vec![VariableWithoutPosition {
+                name: "variable".to_string(),
+                value: VariableValue::Number("-12345".to_string())
+            }]
+        );
+    }
+
+    #[test]
     fn string_test() {
         let result = gen_vars("variable = \"12345\";".to_string());
         assert_eq!(
