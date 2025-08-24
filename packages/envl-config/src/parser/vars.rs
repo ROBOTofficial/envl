@@ -123,12 +123,7 @@ impl Parser {
         } else {
             if let Some(position) = last_position {
                 if !block_closed {
-                    return Err(ParserError {
-                        kind: VARS_CLOSED.kind,
-                        code: VARS_CLOSED.code,
-                        message: VARS_CLOSED.message.to_string(),
-                        position,
-                    });
+                    return Err(template_to_error(VARS_CLOSED, position));
                 }
             }
 
