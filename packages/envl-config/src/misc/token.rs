@@ -19,6 +19,7 @@ pub enum Value {
     Comma,
     Colon,
     Equal,
+    Null,
     Vars,
     Semi,
 }

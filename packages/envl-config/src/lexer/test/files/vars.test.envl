@@ -10,5 +10,6 @@ vars {
     g: Array<int>,
     h: struct {
         a: bool
-    }
+    },
+    i: null
 }

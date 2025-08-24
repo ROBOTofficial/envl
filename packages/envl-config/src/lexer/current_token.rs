@@ -16,6 +16,7 @@ impl Lexer {
             "vars" => Value::Vars,
             "struct" => Value::Struct,
             "Array" => Value::Array,
+            "null" => Value::Null,
             other => Value::Ident(other.to_string()),
         }
     }

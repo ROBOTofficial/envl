@@ -8,5 +8,9 @@ vars {
     b: bool (
         default: false,
         actions: true
+    ),
+    c: string (
+        default: null,
+        actions: null
     )
 }
