@@ -8,7 +8,7 @@ pub enum ErrorKind {
     MultipleCharacters,
 }
 
-pub struct EnvlVarsError {
+pub struct EnvlConfigError {
     pub kind: ErrorKind,
     pub code: u32,
     pub message: &'static str,
@@ -20,4 +20,13 @@ pub struct ParserError {
     pub kind: ErrorKind,
     pub message: String,
     pub position: Position,
+}
+
+pub fn template_to_error(template: EnvlConfigError, position: Position) -> ParserError {
+    ParserError {
+        code: template.code,
+        kind: template.kind,
+        message: template.message.to_string(),
+        position,
+    }
 }
