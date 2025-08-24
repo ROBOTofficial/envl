@@ -100,3 +100,38 @@ pub const INVALID_SYNTAX_OUTSIDE: EnvlConfigErrorTemplate = EnvlConfigErrorTempl
     code: 13,
     message: "Can't use this syntax outside of the vars and settings blocks",
 };
+pub const SETTINGS_CLOSED: EnvlConfigErrorTemplate = EnvlConfigErrorTemplate {
+    kind: ErrorKind::SyntaxError,
+    code: 14,
+    message: "Settings is not closed",
+};
+pub const INVALID_SYNTAX_IN_SETTINGS: EnvlConfigErrorTemplate = EnvlConfigErrorTemplate {
+    kind: ErrorKind::SyntaxError,
+    code: 15,
+    message: "That syntax cannot be used within a settings block",
+};
+pub const INVALID_EQUAL: EnvlConfigErrorTemplate = EnvlConfigErrorTemplate {
+    kind: ErrorKind::SyntaxError,
+    code: 16,
+    message: "Invalid equal position",
+};
+pub const INVALID_SEMI: EnvlConfigErrorTemplate = EnvlConfigErrorTemplate {
+    kind: ErrorKind::SyntaxError,
+    code: 16,
+    message: "Invalid semi position",
+};
+pub const EQUAL_REQUIRED: EnvlConfigErrorTemplate = EnvlConfigErrorTemplate {
+    kind: ErrorKind::SyntaxError,
+    code: 17,
+    message: "Equal is required",
+};
+pub const INVALID_SETTING: EnvlConfigErrorTemplate = EnvlConfigErrorTemplate {
+    kind: ErrorKind::SyntaxError,
+    code: 18,
+    message: "Invalid setting property",
+};
+pub const INVALID_TYPE: EnvlConfigErrorTemplate = EnvlConfigErrorTemplate {
+    kind: ErrorKind::SyntaxError,
+    code: 18,
+    message: "Invalid type",
+};

@@ -36,8 +36,16 @@ impl Parser {
             if let Some(token) = tokens.next() {
                 match token.value {
                     Value::Vars => match self.parse_vars(&mut tokens) {
-                        Ok(contents) => {
-                            vars = Some(contents);
+                        Ok(result) => {
+                            vars = Some(result);
+                        }
+                        Err(err) => {
+                            error!(err);
+                        }
+                    },
+                    Value::Settings => match self.parse_settings(&mut tokens) {
+                        Ok(result) => {
+                            settings = Some(result);
                         }
                         Err(err) => {
                             error!(err);
