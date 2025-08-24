@@ -14,6 +14,7 @@ pub enum Type {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Value {
+    Null,
     String(String),
     Char(char),
     Float(f64),
