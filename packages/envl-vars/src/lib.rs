@@ -1,7 +1,7 @@
 use crate::{
-    lexer::lexer::Lexer,
+    lexer::Lexer,
     misc::variable::Variable,
-    parser::parser::{Parser, ParserError},
+    parser::{Parser, ParserError},
 };
 
 pub mod lexer;

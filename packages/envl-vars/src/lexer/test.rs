@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod lexer_test {
-    use crate::{lexer::lexer::Lexer, misc::token::Value};
+    use crate::{lexer::Lexer, misc::token::Value};
 
     fn generate_tokens(code: String) -> Vec<Value> {
         let lex = Lexer::new("test.envl".to_string(), code);

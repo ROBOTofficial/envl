@@ -10,7 +10,7 @@ use crate::{
             duplicate_error, COLON_POSITION, COLON_REQUIRED, COMMA_POSITION, COMMA_REQUIRED,
             INVALID_ARRAY_POSITION, ITEM_NAME_NOT_SET, STRUCT_CLOSED, SYNTAX_IN_STRUCT,
         },
-        parser::{Parser, ParserError},
+        Parser, ParserError,
     },
 };
 

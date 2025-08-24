@@ -7,7 +7,7 @@ use crate::{
     },
     parser::{
         error::{ARRAY_CLOSED, COMMA_POSITION, COMMA_REQUIRED, SYNTAX_IN_ARRAY},
-        parser::{Parser, ParserError},
+        Parser, ParserError,
     },
 };
 

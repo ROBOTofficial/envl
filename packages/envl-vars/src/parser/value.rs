@@ -2,7 +2,7 @@ use crate::{
     misc::{num::is_num, position::Position, variable::VariableValue},
     parser::{
         error::{INVALID_TYPE, MULTIPLE_CHAR},
-        parser::{Parser, ParserError},
+        Parser, ParserError,
     },
 };
 

@@ -1,9 +1,6 @@
 use crate::{
     misc::position::Position,
-    parser::{
-        error::DIFFERENT_ORDER,
-        parser::{ParsedIdent, Parser, ParserError, Var},
-    },
+    parser::{error::DIFFERENT_ORDER, ParsedIdent, Parser, ParserError, Var},
 };
 
 impl Parser {

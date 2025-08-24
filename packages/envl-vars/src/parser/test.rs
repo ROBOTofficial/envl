@@ -3,12 +3,9 @@ mod test {
     use std::collections::HashMap;
 
     use crate::{
-        lexer::lexer::Lexer,
+        lexer::Lexer,
         misc::variable::{Variable, VariableValue, VariableWithoutPosition},
-        parser::{
-            error::ErrorKind,
-            parser::{Parser, ParserError},
-        },
+        parser::{error::ErrorKind, Parser, ParserError},
     };
 
     fn gen_parsed_vars(code: String) -> Result<Vec<Variable>, ParserError> {
