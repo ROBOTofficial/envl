@@ -12,7 +12,7 @@ use crate::{
             INVALID_LEFT_CURLY_POSITION, INVALID_SEMI, INVALID_SETTING, INVALID_SYNTAX_IN_SETTINGS,
             INVALID_TYPE, MUST_IN_VARS_BLOCK, SETTINGS_CLOSED,
         },
-        parser::Parser,
+        Parser,
     },
 };
 
