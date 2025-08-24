@@ -1,5 +1,5 @@
 #[cfg(test)]
-mod test {
+mod parser_test {
     use std::collections::HashMap;
 
     use crate::{
