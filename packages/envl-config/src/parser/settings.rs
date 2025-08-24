@@ -17,9 +17,9 @@ use crate::{
 };
 
 impl Parser {
-    fn parse_string(&self, value: &String, position: &Position) -> Result<String, ParserError> {
+    fn parse_string(&self, value: &str, position: &Position) -> Result<String, ParserError> {
         if value.starts_with('"') && value.ends_with('"') {
-            let mut str_value = value.clone();
+            let mut str_value = value.to_owned();
             str_value.remove(value.len() - 1);
             str_value.remove(0);
             Ok(str_value)

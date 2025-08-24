@@ -29,7 +29,7 @@ impl Parser {
                 match &token.value {
                     Value::LeftSquareBracket => match self.parse_array(tokens) {
                         Ok(v) => {
-                            if array_contents.len() != 0 && !comma_used {
+                            if !array_contents.is_empty() && !comma_used {
                                 parser_error = Some(ParserError {
                                     kind: COMMA_REQUIRED.kind,
                                     code: COMMA_REQUIRED.code,
@@ -64,7 +64,7 @@ impl Parser {
                     }
                     Value::LeftCurlyBracket => match self.parse_struct(tokens) {
                         Ok(value) => {
-                            if array_contents.len() != 0 && !comma_used {
+                            if !array_contents.is_empty() && !comma_used {
                                 parser_error = Some(ParserError {
                                     kind: COMMA_REQUIRED.kind,
                                     code: COMMA_REQUIRED.code,
@@ -82,10 +82,10 @@ impl Parser {
                         }
                     },
                     Value::Ident(value) => {
-                        let value = self.parse_value(&value, &token.position);
+                        let value = self.parse_value(value, &token.position);
                         match value {
                             Ok(v) => {
-                                if array_contents.len() != 0 && !comma_used {
+                                if !array_contents.is_empty() && !comma_used {
                                     parser_error = Some(ParserError {
                                         kind: COMMA_REQUIRED.kind,
                                         code: COMMA_REQUIRED.code,

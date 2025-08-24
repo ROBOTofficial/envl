@@ -68,7 +68,7 @@ impl Parser {
                                     });
                                     break 'parse_struct_loop;
                                 }
-                                if hm.len() != 0 && !comma_used {
+                                if !hm.is_empty() && !comma_used {
                                     parser_error = Some(ParserError {
                                         kind: COMMA_REQUIRED.kind,
                                         code: COMMA_REQUIRED.code,
@@ -111,7 +111,7 @@ impl Parser {
                                     });
                                     break 'parse_struct_loop;
                                 }
-                                if hm.len() != 0 && !comma_used {
+                                if !hm.is_empty() && !comma_used {
                                     parser_error = Some(ParserError {
                                         kind: COMMA_REQUIRED.kind,
                                         code: COMMA_REQUIRED.code,
@@ -166,7 +166,7 @@ impl Parser {
                             element_name = Some(v.clone());
                         }
                         Some(name) if colon_used => {
-                            if hm.len() != 0 && !comma_used {
+                            if !hm.is_empty() && !comma_used {
                                 parser_error = Some(ParserError {
                                     kind: COMMA_REQUIRED.kind,
                                     code: COMMA_REQUIRED.code,

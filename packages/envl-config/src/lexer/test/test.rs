@@ -1,5 +1,5 @@
 #[cfg(test)]
-mod test {
+mod lexer_test {
     use crate::{
         lexer::lexer::Lexer,
         misc::{token::Value, variable::Type},

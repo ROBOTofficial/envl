@@ -35,8 +35,8 @@ impl Lexer {
                     value: Value::Comment(current_token.clone()),
                     position: Position {
                         file_path: self.file_path.clone(),
-                        row: row.clone(),
-                        col: col.clone(),
+                        row,
+                        col,
                     },
                 });
                 current_token.clear();
@@ -53,8 +53,8 @@ impl Lexer {
 
             let position = Position {
                 file_path: self.file_path.clone(),
-                row: row.clone(),
-                col: col.clone(),
+                row,
+                col,
             };
 
             if is_escape {
@@ -88,7 +88,7 @@ impl Lexer {
                         });
                         start_quote = char::default();
                     } else {
-                        start_quote = c.clone();
+                        start_quote = c;
                     }
                     in_quote = !in_quote;
                     current_token.clear();
