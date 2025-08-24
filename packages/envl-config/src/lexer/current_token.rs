@@ -1,5 +1,5 @@
 use crate::{
-    lexer::lexer::Lexer,
+    lexer::Lexer,
     misc::{token::Value, variable::Type},
 };
 
