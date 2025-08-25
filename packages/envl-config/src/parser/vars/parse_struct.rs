@@ -50,6 +50,21 @@ impl Parser {
                         colon_used = false;
                     };
                 }
+                macro_rules! insert_target_value {
+                    ($value: expr) => {
+                        if target_prop.is_some() {
+                            if !colon_used {
+                                error!(COLON_REQUIRED);
+                            }
+                            if target_value.is_some() {
+                                error!(INVALID_SYNTAX);
+                            }
+                            target_value = Some($value.to_owned());
+                        } else {
+                            error!(ELEMENT_NAME_REQUIRED);
+                        }
+                    };
+                }
 
                 last_position = Some(token.position.to_owned());
 
@@ -94,18 +109,26 @@ impl Parser {
                         target_prop = Some(v.to_owned());
                     }
                     Value::Type(t) => {
-                        if target_prop.is_some() {
-                            if !colon_used {
-                                error!(COLON_REQUIRED);
-                            }
-                            if target_value.is_some() {
-                                error!(INVALID_SYNTAX);
-                            }
-                            target_value = Some(t.to_owned());
-                        } else {
-                            error!(ELEMENT_NAME_REQUIRED);
-                        }
+                        insert_target_value!(t);
                     }
+                    Value::Array => match self.parse_array(tokens) {
+                        Ok(v) => {
+                            insert_target_value!(v);
+                        }
+                        Err(err) => {
+                            parser_error = Some(err);
+                            break 'parse_loop;
+                        }
+                    },
+                    Value::Struct => match self.parse_struct(tokens) {
+                        Ok(t) => {
+                            insert_target_value!(t);
+                        }
+                        Err(err) => {
+                            parser_error = Some(err);
+                            break 'parse_loop;
+                        }
+                    },
                     _ => {
                         error!(INVALID_SYNTAX);
                     }

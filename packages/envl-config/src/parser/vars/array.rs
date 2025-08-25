@@ -69,6 +69,20 @@ impl Parser {
                             }
                         }
                     }
+                    Value::Struct => {
+                        if array_type.is_some() {
+                            error!(INVALID_TYPE);
+                        }
+                        match self.parse_struct(tokens) {
+                            Ok(v) => {
+                                array_type = Some(v);
+                            }
+                            Err(err) => {
+                                parser_error = Some(err);
+                                break 'parse_loop;
+                            }
+                        }
+                    }
                     Value::Type(t) => {
                         if array_type.is_some() {
                             error!(INVALID_TYPE);
