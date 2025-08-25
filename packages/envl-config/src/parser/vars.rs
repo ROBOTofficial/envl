@@ -54,6 +54,7 @@ impl Parser {
                             error!(INVALID_LEFT_CURLY_POSITION);
                         }
                         in_block = true;
+                        continue;
                     }
                     Value::RightCurlyBracket => {
                         block_closed = true;
@@ -98,7 +99,8 @@ impl Parser {
                                 Var {
                                     v_type: t.clone(),
                                     default_value: VarValue::Null,
-                                    actions_value: VarValue::Null
+                                    actions_value: VarValue::Null,
+                                    position: token.position.to_owned()
                                 }
                             );
                             element_name = None;

@@ -4,7 +4,6 @@ use crate::misc::{
 };
 
 pub mod current_token;
-pub mod test;
 
 pub struct Lexer {
     file_path: String,

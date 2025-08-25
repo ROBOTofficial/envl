@@ -2,7 +2,7 @@ use std::slice::Iter;
 
 use crate::{
     misc::{
-        config::Settings,
+        config::{Setting, Settings},
         position::Position,
         token::{Token, Value},
     },
@@ -62,6 +62,7 @@ impl Parser {
                             error!(INVALID_LEFT_CURLY_POSITION);
                         }
                         in_block = true;
+                        continue;
                     }
                     Value::RightCurlyBracket => {
                         block_closed = true;
@@ -79,13 +80,13 @@ impl Parser {
                         if equal_used || target_prop.is_none() {
                             error!(INVALID_EQUAL);
                         }
-                        equal_used = false;
+                        equal_used = true;
                     }
                     Value::Semi => {
                         if semi_used || !after_setting {
                             error!(INVALID_SEMI);
                         }
-                        semi_used = false;
+                        semi_used = true;
                     }
                     Value::Ident(v) => {
                         if let Some(name) = target_prop {
@@ -95,7 +96,10 @@ impl Parser {
                             match name {
                                 "envl_file_path" => match self.parse_string(v, &token.position) {
                                     Ok(value) => {
-                                        settings.envl_file_path = Some(value);
+                                        settings.envl_file_path = Some(Setting {
+                                            value,
+                                            position: token.position.clone(),
+                                        });
                                     }
                                     Err(err) => {
                                         parser_error = Some(err);

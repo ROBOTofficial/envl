@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Type {
+    Null,
     String,
     Char,
     Float,
@@ -9,7 +10,7 @@ pub enum Type {
     Uint,
     Bool,
     Array(Box<Type>),
-    Struct(Box<Type>),
+    Struct(HashMap<String, Type>),
 }
 
 #[derive(Debug, Clone, PartialEq)]
