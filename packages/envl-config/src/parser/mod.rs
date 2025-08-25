@@ -9,7 +9,9 @@ use crate::{
     },
 };
 
+pub mod array;
 pub mod error;
+pub mod parse_struct;
 pub mod settings;
 pub mod vars;
 

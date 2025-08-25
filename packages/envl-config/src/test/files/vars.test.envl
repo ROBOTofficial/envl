@@ -9,7 +9,8 @@ vars {
     f: bool,
     g: Array<int>,
     h: struct {
-        a: bool
+        a: bool;
+        b: int;
     },
     i: null
 }

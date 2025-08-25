@@ -4,9 +4,12 @@ pub mod parser_test {
 
     use crate::{
         lexer::Lexer,
-        misc::config::{
-            remove_position_prop, Config, ConfigWithoutPosition, SettingWithoutPotision,
-            SettingsWithoutPosition,
+        misc::{
+            config::{
+                remove_position_prop, Config, ConfigWithoutPosition, SettingWithoutPotision,
+                SettingsWithoutPosition, VarWithoutPosition,
+            },
+            variable::{Type, Value},
         },
         parser::{error::ParserError, Parser},
     };
@@ -52,90 +55,93 @@ pub mod parser_test {
         );
     }
 
-    //#[test]
-    //fn vars_test() {
-    //    let config = gen_parsed_obj(include_str!("./files/vars.test.envl").to_string());
-    //    assert_eq!(
-    //        config,
-    //        ConfigWithoutPosition {
-    //            settings: SettingsWithoutPosition {
-    //                envl_file_path: None
-    //            },
-    //            vars: HashMap::from([
-    //                (
-    //                    "a".to_string(),
-    //                    VarWithoutPosition {
-    //                        v_type: Type::String,
-    //                        default_value: Value::Null,
-    //                        actions_value: Value::Null
-    //                    }
-    //                ),
-    //                (
-    //                    "b".to_string(),
-    //                    VarWithoutPosition {
-    //                        v_type: Type::Char,
-    //                        default_value: Value::Null,
-    //                        actions_value: Value::Null
-    //                    }
-    //                ),
-    //                (
-    //                    "c".to_string(),
-    //                    VarWithoutPosition {
-    //                        v_type: Type::Float,
-    //                        default_value: Value::Null,
-    //                        actions_value: Value::Null
-    //                    }
-    //                ),
-    //                (
-    //                    "d".to_string(),
-    //                    VarWithoutPosition {
-    //                        v_type: Type::Int,
-    //                        default_value: Value::Null,
-    //                        actions_value: Value::Null
-    //                    }
-    //                ),
-    //                (
-    //                    "e".to_string(),
-    //                    VarWithoutPosition {
-    //                        v_type: Type::Uint,
-    //                        default_value: Value::Null,
-    //                        actions_value: Value::Null
-    //                    }
-    //                ),
-    //                (
-    //                    "f".to_string(),
-    //                    VarWithoutPosition {
-    //                        v_type: Type::Bool,
-    //                        default_value: Value::Null,
-    //                        actions_value: Value::Null
-    //                    }
-    //                ),
-    //                (
-    //                    "g".to_string(),
-    //                    VarWithoutPosition {
-    //                        v_type: Type::Array(Box::from(Type::Int)),
-    //                        default_value: Value::Null,
-    //                        actions_value: Value::Null
-    //                    }
-    //                ),
-    //                (
-    //                    "h".to_string(),
-    //                    VarWithoutPosition {
-    //                        v_type: Type::Struct(HashMap::from([("a".to_string(), Type::Bool)])),
-    //                        default_value: Value::Null,
-    //                        actions_value: Value::Null
-    //                    }
-    //                ),
-    //                (
-    //                    "i".to_string(),
-    //                    VarWithoutPosition {
-    //                        v_type: Type::Null,
-    //                        default_value: Value::Null,
-    //                        actions_value: Value::Null
-    //                    }
-    //                )
-    //            ])
-    //        }
-    //    );
-    //}
+    #[test]
+    fn vars_test() {
+        let config = gen_parsed_obj(include_str!("./files/vars.test.envl").to_string());
+        assert_eq!(
+            config,
+            ConfigWithoutPosition {
+                settings: SettingsWithoutPosition {
+                    envl_file_path: None
+                },
+                vars: HashMap::from([
+                    (
+                        "a".to_string(),
+                        VarWithoutPosition {
+                            v_type: Type::String,
+                            default_value: Value::Null,
+                            actions_value: Value::Null
+                        }
+                    ),
+                    (
+                        "b".to_string(),
+                        VarWithoutPosition {
+                            v_type: Type::Char,
+                            default_value: Value::Null,
+                            actions_value: Value::Null
+                        }
+                    ),
+                    (
+                        "c".to_string(),
+                        VarWithoutPosition {
+                            v_type: Type::Float,
+                            default_value: Value::Null,
+                            actions_value: Value::Null
+                        }
+                    ),
+                    (
+                        "d".to_string(),
+                        VarWithoutPosition {
+                            v_type: Type::Int,
+                            default_value: Value::Null,
+                            actions_value: Value::Null
+                        }
+                    ),
+                    (
+                        "e".to_string(),
+                        VarWithoutPosition {
+                            v_type: Type::Uint,
+                            default_value: Value::Null,
+                            actions_value: Value::Null
+                        }
+                    ),
+                    (
+                        "f".to_string(),
+                        VarWithoutPosition {
+                            v_type: Type::Bool,
+                            default_value: Value::Null,
+                            actions_value: Value::Null
+                        }
+                    ),
+                    (
+                        "g".to_string(),
+                        VarWithoutPosition {
+                            v_type: Type::Array(Box::from(Type::Int)),
+                            default_value: Value::Null,
+                            actions_value: Value::Null
+                        }
+                    ),
+                    (
+                        "h".to_string(),
+                        VarWithoutPosition {
+                            v_type: Type::Struct(HashMap::from([
+                                ("a".to_string(), Type::Bool),
+                                ("b".to_string(), Type::Int)
+                            ])),
+                            default_value: Value::Null,
+                            actions_value: Value::Null
+                        }
+                    ),
+                    (
+                        "i".to_string(),
+                        VarWithoutPosition {
+                            v_type: Type::Null,
+                            default_value: Value::Null,
+                            actions_value: Value::Null
+                        }
+                    )
+                ])
+            }
+        );
+    }
 }

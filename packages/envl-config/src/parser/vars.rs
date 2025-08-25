@@ -4,7 +4,7 @@ use crate::{
     misc::{
         config::{Var, Vars},
         token::{Token, Value},
-        variable::Value as VarValue,
+        variable::{Type, Value as VarValue},
     },
     parser::{
         error::{
@@ -38,11 +38,20 @@ impl Parser {
                 }
                 macro_rules! insert {
                     ($name: expr, $value: expr) => {
+                        if !vars.is_empty() && !comma_used {
+                            error!(COMMA_REQUIRED);
+                        }
+                        if !colon_used {
+                            error!(COLON_REQUIRED);
+                        }
                         if vars.get(&$name).is_some() {
                             let err = duplicate_error(&$name);
                             error!(err);
                         }
                         vars.insert($name, $value);
+                        element_name = None;
+                        comma_used = false;
+                        colon_used = false;
                     };
                 }
 
@@ -86,14 +95,65 @@ impl Parser {
                         }
                         element_name = Some(v.clone());
                     }
-                    Value::Type(t) => {
-                        if !vars.is_empty() && !comma_used {
-                            error!(COMMA_REQUIRED);
-                        }
+                    Value::Null => {
                         if let Some(name) = element_name {
-                            if !colon_used {
-                                error!(COLON_REQUIRED);
+                            insert!(
+                                name,
+                                Var {
+                                    v_type: Type::Null,
+                                    default_value: VarValue::Null,
+                                    actions_value: VarValue::Null,
+                                    position: token.position.to_owned()
+                                }
+                            );
+                        } else {
+                            error!(ELEMENT_NAME_REQUIRED);
+                        }
+                    }
+                    Value::Array => match self.parse_array(tokens) {
+                        Ok(t) => {
+                            if let Some(name) = element_name {
+                                insert!(
+                                    name,
+                                    Var {
+                                        v_type: t.clone(),
+                                        default_value: VarValue::Null,
+                                        actions_value: VarValue::Null,
+                                        position: token.position.to_owned()
+                                    }
+                                );
+                            } else {
+                                error!(ELEMENT_NAME_REQUIRED);
                             }
+                        }
+                        Err(err) => {
+                            parser_error = Some(err);
+                            break 'parse_loop;
+                        }
+                    },
+                    Value::Struct => match self.parse_struct(tokens) {
+                        Ok(t) => {
+                            if let Some(name) = element_name {
+                                insert!(
+                                    name,
+                                    Var {
+                                        v_type: t.clone(),
+                                        default_value: VarValue::Null,
+                                        actions_value: VarValue::Null,
+                                        position: token.position.to_owned()
+                                    }
+                                );
+                            } else {
+                                error!(ELEMENT_NAME_REQUIRED);
+                            }
+                        }
+                        Err(err) => {
+                            parser_error = Some(err);
+                            break 'parse_loop;
+                        }
+                    },
+                    Value::Type(t) => {
+                        if let Some(name) = element_name {
                             insert!(
                                 name,
                                 Var {
@@ -103,9 +163,6 @@ impl Parser {
                                     position: token.position.to_owned()
                                 }
                             );
-                            element_name = None;
-                            comma_used = false;
-                            colon_used = false;
                         } else {
                             error!(ELEMENT_NAME_REQUIRED);
                         }

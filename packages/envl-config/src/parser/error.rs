@@ -135,3 +135,23 @@ pub const INVALID_TYPE: EnvlConfigErrorTemplate = EnvlConfigErrorTemplate {
     code: 18,
     message: "Invalid type",
 };
+pub const ARRAY_CLOSED: EnvlConfigErrorTemplate = EnvlConfigErrorTemplate {
+    kind: ErrorKind::SyntaxError,
+    code: 19,
+    message: "Array is not closed",
+};
+pub const INVALID_LEFT_SHIFT_POSITION: EnvlConfigErrorTemplate = EnvlConfigErrorTemplate {
+    kind: ErrorKind::SyntaxError,
+    code: 20,
+    message: "Position of the < is invalid",
+};
+pub const STRUCT_CLOSED: EnvlConfigErrorTemplate = EnvlConfigErrorTemplate {
+    kind: ErrorKind::SyntaxError,
+    code: 21,
+    message: "Struct is not closed",
+};
+pub const INVALID_SYNTAX: EnvlConfigErrorTemplate = EnvlConfigErrorTemplate {
+    kind: ErrorKind::SyntaxError,
+    code: 22,
+    message: "Invalid syntax",
+};
