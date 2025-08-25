@@ -9,8 +9,8 @@ use crate::{
     parser::{
         error::{
             template_to_error, ParserError, EQUAL_REQUIRED, INVALID_EQUAL,
-            INVALID_LEFT_CURLY_POSITION, INVALID_SEMI, INVALID_SETTING, INVALID_SYNTAX_IN_SETTINGS,
-            INVALID_TYPE, MUST_IN_VARS_BLOCK, SETTINGS_CLOSED,
+            INVALID_LEFT_CURLY_POSITION, INVALID_SETTING, INVALID_SYNTAX_IN_SETTINGS, INVALID_TYPE,
+            MUST_IN_VARS_BLOCK, SETTINGS_CLOSED,
         },
         Parser,
     },
@@ -35,10 +35,9 @@ impl Parser {
         let mut in_block = false;
         let mut block_closed = false;
         let mut equal_used = false;
-        let mut semi_used = false;
-        let mut after_setting = false;
         let mut last_position = None;
         let mut target_prop = None;
+        let mut target_value = None;
 
         let mut parser_error = None;
         let mut settings = Settings {
@@ -82,19 +81,14 @@ impl Parser {
                         }
                         equal_used = true;
                     }
-                    Value::Semi => {
-                        if semi_used || !after_setting {
-                            error!(INVALID_SEMI);
-                        }
-                        semi_used = true;
-                    }
-                    Value::Ident(v) => {
-                        if let Some(name) = target_prop {
+                    Value::Semi => match (target_prop, target_value) {
+                        (Some(prop), Some(value)) => {
                             if !equal_used {
                                 error!(EQUAL_REQUIRED);
                             }
-                            match name {
-                                "envl_file_path" => match self.parse_string(v, &token.position) {
+                            match prop {
+                                "envl_file_path" => match self.parse_string(value, &token.position)
+                                {
                                     Ok(value) => {
                                         settings.envl_file_path = Some(Setting {
                                             value,
@@ -110,8 +104,12 @@ impl Parser {
                                     error!(INVALID_SETTING);
                                 }
                             }
-                            equal_used = false;
-                            after_setting = true;
+                        }
+                        _ => {}
+                    },
+                    Value::Ident(v) => {
+                        if target_prop.is_some() {
+                            target_value = Some(v);
                         } else {
                             target_prop = Some(v);
                         }
