@@ -16,6 +16,9 @@ use crate::{
     },
 };
 
+pub mod array;
+pub mod parse_struct;
+
 impl Parser {
     pub fn parse_vars<'a>(&self, tokens: &mut Iter<'a, Token>) -> Result<Vars, ParserError> {
         let mut in_block = false;
