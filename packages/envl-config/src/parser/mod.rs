@@ -26,7 +26,20 @@ impl Parser {
     }
 
     pub fn parse(&self) -> Result<Config, ParserError> {
-        let mut tokens = self.tokens.iter();
+        let mut based_token = vec![];
+
+        for token in self.tokens.iter() {
+            match token.value {
+                Value::Comment(_) => {
+                    continue;
+                }
+                _ => {
+                    based_token.push(token.clone());
+                }
+            }
+        }
+
+        let mut tokens = based_token.iter();
         let mut parser_error = None;
         let mut vars = None;
         let mut settings = None;
