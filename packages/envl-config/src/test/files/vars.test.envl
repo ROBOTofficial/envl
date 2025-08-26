@@ -12,5 +12,18 @@ vars {
         a: bool;
         b: int;
     },
-    i: null
+    i: null,
+    j: Array<
+        Array<
+            struct {
+                a: int;
+            }
+        >
+    >,
+    k: struct {
+        a: struct {
+            b: bool;
+        };
+        b: Array<int>;
+    }
 }

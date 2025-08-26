@@ -139,6 +139,30 @@ pub mod parser_test {
                             default_value: Value::Null,
                             actions_value: Value::Null
                         }
+                    ),
+                    (
+                        "j".to_string(),
+                        VarWithoutPosition {
+                            v_type: Type::Array(Box::from(Type::Array(Box::from(Type::Struct(
+                                HashMap::from([("a".to_string(), Type::Int)])
+                            ))))),
+                            default_value: Value::Null,
+                            actions_value: Value::Null
+                        }
+                    ),
+                    (
+                        "k".to_string(),
+                        VarWithoutPosition {
+                            v_type: Type::Struct(HashMap::from([
+                                (
+                                    "a".to_string(),
+                                    Type::Struct(HashMap::from([("b".to_string(), Type::Bool)]))
+                                ),
+                                ("b".to_string(), Type::Array(Box::from(Type::Int)))
+                            ])),
+                            default_value: Value::Null,
+                            actions_value: Value::Null
+                        }
                     )
                 ])
             }
