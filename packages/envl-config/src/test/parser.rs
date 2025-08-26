@@ -144,4 +144,43 @@ pub mod parser_test {
             }
         );
     }
+
+    #[test]
+    fn option_value_test() {
+        let config = gen_parsed_obj(include_str!("./files/option_value.test.envl").to_string());
+        assert_eq!(
+            config,
+            ConfigWithoutPosition {
+                settings: SettingsWithoutPosition {
+                    envl_file_path: None
+                },
+                vars: HashMap::from([
+                    (
+                        "a".to_string(),
+                        VarWithoutPosition {
+                            v_type: Type::Int,
+                            default_value: Value::Int(123),
+                            actions_value: Value::Int(456)
+                        }
+                    ),
+                    (
+                        "b".to_string(),
+                        VarWithoutPosition {
+                            v_type: Type::Bool,
+                            default_value: Value::Bool(false),
+                            actions_value: Value::Bool(true)
+                        }
+                    ),
+                    (
+                        "c".to_string(),
+                        VarWithoutPosition {
+                            v_type: Type::String,
+                            default_value: Value::Null,
+                            actions_value: Value::Null
+                        }
+                    )
+                ])
+            }
+        );
+    }
 }

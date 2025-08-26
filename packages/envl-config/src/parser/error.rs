@@ -155,3 +155,18 @@ pub const INVALID_SYNTAX: EnvlConfigErrorTemplate = EnvlConfigErrorTemplate {
     code: 22,
     message: "Invalid syntax",
 };
+pub const OPTION_CLOSED: EnvlConfigErrorTemplate = EnvlConfigErrorTemplate {
+    kind: ErrorKind::SyntaxError,
+    code: 23,
+    message: "Option is not closed",
+};
+pub const INVALID_LEFT_PARENTHESES: EnvlConfigErrorTemplate = EnvlConfigErrorTemplate {
+    kind: ErrorKind::SyntaxError,
+    code: 24,
+    message: "Position of the ( is invalid",
+};
+pub const MULTIPLE_CHAR: EnvlConfigErrorTemplate = EnvlConfigErrorTemplate {
+    kind: ErrorKind::MultipleCharacters,
+    code: 25,
+    message: "Can't input multiple characters in char",
+};

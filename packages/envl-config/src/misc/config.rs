@@ -26,7 +26,7 @@ pub struct SettingsWithoutPosition {
     pub envl_file_path: Option<SettingWithoutPotision<String>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Var<T = Type, U = Value> {
     pub v_type: T,
     pub default_value: U,
