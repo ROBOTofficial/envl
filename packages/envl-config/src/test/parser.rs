@@ -202,6 +202,25 @@ pub mod parser_test {
                             default_value: Value::Null,
                             actions_value: Value::Null
                         }
+                    ),
+                    (
+                        "d".to_string(),
+                        VarWithoutPosition {
+                            v_type: Type::Array(Box::from(Type::Int)),
+                            default_value: Value::Array(vec![Value::Int(123), Value::Int(456)]),
+                            actions_value: Value::Array(vec![])
+                        }
+                    ),
+                    (
+                        "e".to_string(),
+                        VarWithoutPosition {
+                            v_type: Type::Array(Box::from(Type::Array(Box::from(Type::Int)))),
+                            default_value: Value::Array(vec![
+                                Value::Array(vec![Value::Int(123)]),
+                                Value::Array(vec![Value::Int(456)])
+                            ]),
+                            actions_value: Value::Array(vec![Value::Array(vec![])])
+                        }
                     )
                 ])
             }

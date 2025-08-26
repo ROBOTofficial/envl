@@ -12,5 +12,13 @@ vars {
     c: string (
         default: null,
         actions: null
+    ),
+    d: Array<int> (
+        default: [ 123, 456 ],
+        actions: []
+    ),
+    e: Array<Array<int>> (
+        default: [ [ 123 ], [ 456 ] ],
+        actions: [ [] ]
     )
 }

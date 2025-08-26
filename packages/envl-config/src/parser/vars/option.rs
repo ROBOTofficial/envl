@@ -9,15 +9,18 @@ use crate::{
     parser::{
         error::{
             template_to_error, ParserError, COLON_POSITION, COLON_REQUIRED, COMMA_POSITION,
-            ELEMENT_NAME_REQUIRED, INVALID_LEFT_PARENTHESES, INVALID_SYNTAX, OPTION_CLOSED,
+            ELEMENT_NAME_REQUIRED, INVALID_LEFT_PARENTHESES, INVALID_SYNTAX, INVALID_TYPE,
+            OPTION_CLOSED,
         },
         value::parse_value,
+        var::array::parse_array,
         Parser,
     },
 };
 
 #[derive(Debug, Clone)]
 pub enum ParsedValue {
+    Array(Vec<ParsedValue>),
     Value(String),
     Null,
 }
@@ -32,6 +35,26 @@ pub fn parse_parsed_value(
         ParsedValue::Value(value) => match parse_value(t, value) {
             Ok(result) => Ok(result),
             Err(err) => Err(template_to_error(err, position)),
+        },
+        ParsedValue::Array(values) => match t {
+            Type::Array(boxed_type) => {
+                let t = *boxed_type;
+                let mut elements = Vec::new();
+
+                for value in values {
+                    match parse_parsed_value(value, t.to_owned(), position.to_owned()) {
+                        Ok(element) => {
+                            elements.push(element);
+                        }
+                        Err(err) => {
+                            return Err(err);
+                        }
+                    }
+                }
+
+                Ok(ConfigValue::Array(elements))
+            }
+            _ => Err(template_to_error(INVALID_TYPE, position)),
         },
     }
 }
@@ -124,7 +147,15 @@ impl Parser {
                         }
                     }
                     Value::Struct => {}
-                    Value::LeftSquareBracket => {}
+                    Value::LeftSquareBracket => match parse_array(tokens) {
+                        Ok(v) => {
+                            insert!(v);
+                        }
+                        Err(err) => {
+                            parser_error = Some(err);
+                            break 'parse_loop;
+                        }
+                    },
                     _ => {
                         error!(INVALID_SYNTAX);
                     }

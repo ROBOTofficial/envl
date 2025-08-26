@@ -12,6 +12,7 @@ use crate::{
 pub mod error;
 pub mod settings;
 pub mod value;
+pub mod var;
 pub mod vars;
 
 pub struct Parser {
