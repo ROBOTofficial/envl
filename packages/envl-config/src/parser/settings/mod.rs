@@ -114,7 +114,6 @@ impl Parser {
                             target_prop = Some(v);
                         }
                     }
-                    Value::Comment(_) => {}
                     _ => {
                         error!(INVALID_SYNTAX_IN_SETTINGS);
                     }

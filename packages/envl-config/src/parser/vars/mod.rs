@@ -224,7 +224,6 @@ impl Parser {
                             break 'parse_loop;
                         }
                     },
-                    Value::Comment(_) => {}
                     _ => {
                         error!(INVALID_SYNTAX_IN_VARS);
                     }

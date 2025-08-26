@@ -70,7 +70,6 @@ impl Parser {
                             error!(err);
                         }
                     },
-                    Value::Comment(_) => {}
                     _ => {
                         error!(template_to_error(
                             INVALID_SYNTAX_OUTSIDE,
