@@ -81,8 +81,8 @@ impl Parser {
                         }
                         equal_used = true;
                     }
-                    Value::Semi => match (target_prop, target_value) {
-                        (Some(prop), Some(value)) => {
+                    Value::Semi => {
+                        if let (Some(prop), Some(value)) = (target_prop, target_value) {
                             if !equal_used {
                                 error!(EQUAL_REQUIRED);
                             }
@@ -105,8 +105,7 @@ impl Parser {
                                 }
                             }
                         }
-                        _ => {}
-                    },
+                    }
                     Value::Ident(v) => {
                         if target_prop.is_some() {
                             target_value = Some(v);
