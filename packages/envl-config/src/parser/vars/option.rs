@@ -45,7 +45,7 @@ pub fn parse_parsed_value(
                     if let Some(value_type) = t.get(&name) {
                         match parse_parsed_value(value, value_type.clone(), position.clone()) {
                             Ok(result) => {
-                                if elements.get(&name).is_some() {
+                                if elements.contains_key(&name) {
                                     return Err(template_to_error(INVALID_ELEMENTS, position));
                                 }
                                 elements.insert(name.clone(), result);
