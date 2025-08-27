@@ -235,6 +235,29 @@ pub mod parser_test {
                                 Value::Bool(false)
                             )]))
                         }
+                    ),
+                    (
+                        "g".to_string(),
+                        VarWithoutPosition {
+                            v_type: Type::Struct(HashMap::from([(
+                                "a".to_string(),
+                                Type::Struct(HashMap::from([("b".to_string(), Type::Bool)]))
+                            )])),
+                            default_value: Value::Struct(HashMap::from([(
+                                "a".to_string(),
+                                Value::Struct(HashMap::from([(
+                                    "b".to_string(),
+                                    Value::Bool(true)
+                                )]))
+                            )])),
+                            actions_value: Value::Struct(HashMap::from([(
+                                "a".to_string(),
+                                Value::Struct(HashMap::from([(
+                                    "b".to_string(),
+                                    Value::Bool(false)
+                                )]))
+                            )]))
+                        }
                     )
                 ])
             }

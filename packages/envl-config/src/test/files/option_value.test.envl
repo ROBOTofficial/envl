@@ -30,5 +30,21 @@ vars {
         actions: struct {
             a: false;
         }
+    ),
+    g: struct {
+        a: struct {
+            b: bool;
+        };
+    } (
+        default: struct {
+            a: struct {
+                b: true;
+            };
+        },
+        actions: struct {
+            a: struct {
+                b: false;
+            };
+        }
     )
 }
