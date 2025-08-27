@@ -1,6 +1,7 @@
 [package]
 name = "envl-config"
 version = "0.1.0"
+description = "parser and lexer for .envlconf file."
 repository.workspace = true
 license.workspace = true
 edition.workspace = true
