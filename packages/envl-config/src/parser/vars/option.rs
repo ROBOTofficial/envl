@@ -1,4 +1,4 @@
-use std::slice::Iter;
+use std::{collections::HashMap, slice::Iter};
 
 use crate::{
     misc::{
@@ -9,11 +9,11 @@ use crate::{
     parser::{
         error::{
             template_to_error, ParserError, COLON_POSITION, COLON_REQUIRED, COMMA_POSITION,
-            ELEMENT_NAME_REQUIRED, INVALID_LEFT_PARENTHESES, INVALID_SYNTAX, INVALID_TYPE,
-            OPTION_CLOSED,
+            ELEMENT_NAME_REQUIRED, INVALID_ELEMENTS, INVALID_LEFT_PARENTHESES, INVALID_SYNTAX,
+            INVALID_TYPE, OPTION_CLOSED,
         },
         value::parse_value,
-        var::array::parse_array,
+        var::{array::parse_array, parse_struct::parse_struct},
         Parser,
     },
 };
@@ -21,6 +21,7 @@ use crate::{
 #[derive(Debug, Clone)]
 pub enum ParsedValue {
     Array(Vec<ParsedValue>),
+    Struct(HashMap<String, ParsedValue>),
     Value(String),
     Null,
 }
@@ -35,6 +36,32 @@ pub fn parse_parsed_value(
         ParsedValue::Value(value) => match parse_value(t, value) {
             Ok(result) => Ok(result),
             Err(err) => Err(template_to_error(err, position)),
+        },
+        ParsedValue::Struct(values) => match t {
+            Type::Struct(t) => {
+                let mut elements = HashMap::new();
+
+                for (name, value) in values {
+                    if let Some(value_type) = t.get(&name) {
+                        match parse_parsed_value(value, value_type.clone(), position.clone()) {
+                            Ok(result) => {
+                                if elements.get(&name).is_some() {
+                                    return Err(template_to_error(INVALID_ELEMENTS, position));
+                                }
+                                elements.insert(name.clone(), result);
+                            }
+                            Err(err) => {
+                                return Err(err);
+                            }
+                        }
+                    } else {
+                        return Err(template_to_error(INVALID_TYPE, position));
+                    }
+                }
+
+                Ok(ConfigValue::Struct(elements))
+            }
+            _ => Err(template_to_error(INVALID_TYPE, position)),
         },
         ParsedValue::Array(values) => match t {
             Type::Array(boxed_type) => {
@@ -146,7 +173,15 @@ impl Parser {
                             error!(ELEMENT_NAME_REQUIRED);
                         }
                     }
-                    Value::Struct => {}
+                    Value::Struct => match parse_struct(tokens) {
+                        Ok(v) => {
+                            insert!(v);
+                        }
+                        Err(err) => {
+                            parser_error = Some(err);
+                            break 'parse_loop;
+                        }
+                    },
                     Value::LeftSquareBracket => match parse_array(tokens) {
                         Ok(v) => {
                             insert!(v);

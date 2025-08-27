@@ -170,3 +170,8 @@ pub const MULTIPLE_CHAR: EnvlConfigErrorTemplate = EnvlConfigErrorTemplate {
     code: 25,
     message: "Can't input multiple characters in char",
 };
+pub const IN_BLOCK: EnvlConfigErrorTemplate = EnvlConfigErrorTemplate {
+    kind: ErrorKind::MultipleCharacters,
+    code: 26,
+    message: "Write within the block",
+};

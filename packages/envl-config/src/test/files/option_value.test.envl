@@ -20,5 +20,15 @@ vars {
     e: Array<Array<int>> (
         default: [ [ 123 ], [ 456 ] ],
         actions: [ [] ]
+    ),
+    f: struct {
+        a: bool;
+    } (
+        default: struct {
+            a: true;
+        },
+        actions: struct {
+            a: false;
+        }
     )
 }

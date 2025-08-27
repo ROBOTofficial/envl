@@ -7,6 +7,7 @@ use crate::{
             template_to_error, ParserError, ARRAY_CLOSED, COMMA_POSITION, COMMA_REQUIRED,
             INVALID_SYNTAX,
         },
+        var::parse_struct::parse_struct,
         vars::option::ParsedValue,
     },
 };
@@ -68,6 +69,18 @@ pub fn parse_array<'a>(tokens: &mut Iter<'a, Token>) -> Result<ParsedValue, Pars
                     block_closed = true;
                     break 'parse_loop;
                 }
+                Value::Null => {
+                    elements.push(ParsedValue::Null);
+                }
+                Value::Struct => match parse_struct(tokens) {
+                    Ok(v) => {
+                        insert!(v);
+                    }
+                    Err(err) => {
+                        parser_error = Some(err);
+                        break 'parse_loop;
+                    }
+                },
                 Value::Ident(v) => {
                     elements.push(ParsedValue::Value(v.to_owned()));
                 }

@@ -221,6 +221,20 @@ pub mod parser_test {
                             ]),
                             actions_value: Value::Array(vec![Value::Array(vec![])])
                         }
+                    ),
+                    (
+                        "f".to_string(),
+                        VarWithoutPosition {
+                            v_type: Type::Struct(HashMap::from([("a".to_string(), Type::Bool)])),
+                            default_value: Value::Struct(HashMap::from([(
+                                "a".to_string(),
+                                Value::Bool(true)
+                            )])),
+                            actions_value: Value::Struct(HashMap::from([(
+                                "a".to_string(),
+                                Value::Bool(false)
+                            )]))
+                        }
                     )
                 ])
             }
