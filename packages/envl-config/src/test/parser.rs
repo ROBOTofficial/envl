@@ -263,4 +263,51 @@ pub mod parser_test {
             }
         );
     }
+
+    #[test]
+    fn uncommon_option_value_test() {
+        let config =
+            gen_parsed_obj(include_str!("./files/uncommon_option_value.test.envl").to_string());
+        assert_eq!(
+            config,
+            ConfigWithoutPosition {
+                settings: SettingsWithoutPosition {
+                    envl_file_path: None
+                },
+                vars: HashMap::from([
+                    (
+                        "a".to_string(),
+                        VarWithoutPosition {
+                            v_type: Type::Array(Box::from(Type::Struct(HashMap::from([(
+                                "a".to_string(),
+                                Type::Int
+                            )])))),
+                            default_value: Value::Array(vec![
+                                Value::Struct(HashMap::from([("a".to_string(), Value::Int(123))])),
+                                Value::Struct(HashMap::from([("a".to_string(), Value::Int(456))]))
+                            ]),
+                            actions_value: Value::Array(vec![])
+                        }
+                    ),
+                    (
+                        "b".to_string(),
+                        VarWithoutPosition {
+                            v_type: Type::Struct(HashMap::from([(
+                                "a".to_string(),
+                                Type::Array(Box::from(Type::Int))
+                            )])),
+                            default_value: Value::Struct(HashMap::from([(
+                                "a".to_string(),
+                                Value::Array(vec![Value::Int(123), Value::Int(456)])
+                            )])),
+                            actions_value: Value::Struct(HashMap::from([(
+                                "a".to_string(),
+                                Value::Array(vec![])
+                            )]))
+                        }
+                    )
+                ])
+            }
+        )
+    }
 }

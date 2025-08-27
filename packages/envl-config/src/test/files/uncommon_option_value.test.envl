@@ -1,0 +1,27 @@
+settings {}
+
+vars {
+    a: Array<struct {
+        a: int;
+    }> (
+        default: [
+            struct {
+                a: 123;
+            },
+            struct {
+                a: 456;
+            }
+        ],
+        actions: []
+    ),
+    b: struct {
+        a: Array<int>;
+    } (
+        default: struct {
+            a: [ 123, 456 ];
+        },
+        actions: struct {
+            a: [];
+        }
+    )
+}
