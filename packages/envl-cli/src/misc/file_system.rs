@@ -1,6 +1,7 @@
 use std::{
     fs::File,
-    io::{Error, Read},
+    io::{Error, Read, Write},
+    path::Path,
 };
 
 pub fn read_file(file_path: String) -> Result<String, Error> {
@@ -10,6 +11,18 @@ pub fn read_file(file_path: String) -> Result<String, Error> {
             let _ = f.read_to_string(&mut buf);
             Ok(buf)
         }
+        Err(err) => Err(err),
+    }
+}
+
+pub fn write_file(file_path: String, txt: String) -> Result<usize, Error> {
+    let f = if Path::new(&file_path).is_file() {
+        File::open(file_path)
+    } else {
+        File::create(file_path)
+    };
+    match f {
+        Ok(mut f) => f.write(&txt.as_bytes()),
         Err(err) => Err(err),
     }
 }
