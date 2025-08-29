@@ -10,13 +10,14 @@ use envl_vars::{
     misc::position::Position,
     misc::variable::{Variable, VariableValue},
 };
-use std::{collections::HashMap, env::current_dir, fs::File, io::Read};
+use std::{collections::HashMap, env::current_dir, fs::File, io::Read, path::PathBuf};
 
 use crate::misc::{
     error::{
         convert_envl_config_error, convert_envl_lib_error, convert_envl_vars_error,
         convert_io_error, EnvlError, EnvlLibError,
     },
+    filesystem::read_file,
     vars::vars_to_hashmap,
 };
 
@@ -46,7 +47,11 @@ pub fn load_envl<T: Env>() -> Result<T, EnvlError> {
                 Ok(mut f) => {
                     let mut buf = String::new();
                     let _ = f.read_to_string(&mut buf);
-                    load_envl_core(config_file_path.display().to_string(), buf)
+                    load_envl_core(
+                        current_dir_path,
+                        config_file_path.display().to_string(),
+                        buf,
+                    )
                 }
                 Err(err) => Err(convert_io_error(err)),
             }
@@ -55,8 +60,12 @@ pub fn load_envl<T: Env>() -> Result<T, EnvlError> {
     }
 }
 
-fn load_envl_core<T: Env>(file_path: String, code: String) -> Result<T, EnvlError> {
-    match load_files(file_path, code) {
+fn load_envl_core<T: Env>(
+    current_dir: PathBuf,
+    config_file_path: String,
+    code: String,
+) -> Result<T, EnvlError> {
+    match load_files(current_dir, config_file_path, code) {
         Ok((vars, config)) => {
             let vars_hm = vars_to_hashmap(vars);
             let mut result = HashMap::new();
@@ -86,12 +95,26 @@ fn load_envl_core<T: Env>(file_path: String, code: String) -> Result<T, EnvlErro
     }
 }
 
-pub fn load_files(file_path: String, code: String) -> Result<(Vec<Variable>, Config), EnvlError> {
-    match gen_config_ast(file_path.clone(), code.clone()) {
-        Ok(config) => match gen_vars_ast(file_path, code) {
-            Ok(vars) => Ok((vars, config)),
-            Err(err) => Err(convert_envl_vars_error(err)),
-        },
+pub fn load_files(
+    current_dir: PathBuf,
+    config_file_path: String,
+    code: String,
+) -> Result<(Vec<Variable>, Config), EnvlError> {
+    match gen_config_ast(config_file_path.clone(), code.clone()) {
+        Ok(config) => {
+            let file_path = if let Some(ref file_path) = config.settings.envl_file_path {
+                file_path.value.clone()
+            } else {
+                current_dir.join(".envl").display().to_string()
+            };
+            match read_file(file_path.to_owned()) {
+                Ok(code) => match gen_vars_ast(file_path, code) {
+                    Ok(vars) => Ok((vars, config)),
+                    Err(err) => Err(convert_envl_vars_error(err)),
+                },
+                Err(err) => Err(err),
+            }
+        }
         Err(err) => Err(convert_envl_config_error(err)),
     }
 }
