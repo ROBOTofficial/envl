@@ -74,6 +74,13 @@ name = "envl-config"
 version = "0.2.0"
 
 [[package]]
+name = "envl-rs-test"
+version = "0.1.0"
+dependencies = [
+ "envl",
+]
+
+[[package]]
 name = "envl-vars"
 version = "1.0.0"
 

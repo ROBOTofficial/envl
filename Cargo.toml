@@ -4,7 +4,8 @@ members = [
     "packages/envl-rs",
     "packages/envl-config",
     "packages/envl-vars",
-    "packages/envl-cli"
+    "packages/envl-cli",
+    "tests/envl-rs-test"
 ]
 
 [workspace.package]
