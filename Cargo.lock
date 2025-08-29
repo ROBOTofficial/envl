@@ -73,7 +73,7 @@ version = "0.1.0"
 
 [[package]]
 name = "envl-vars"
-version = "0.3.0"
+version = "1.0.0"
 
 [[package]]
 name = "gimli"
