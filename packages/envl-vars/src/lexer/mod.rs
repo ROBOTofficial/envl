@@ -3,6 +3,7 @@ use crate::misc::{
     token::{Token, Value},
 };
 
+pub mod current_token;
 pub mod test;
 
 pub struct Lexer {
@@ -158,7 +159,7 @@ impl Lexer {
                 other => {
                     if other.is_whitespace() && !in_quote && !is_comment {
                         if !current_token.is_empty() {
-                            let identifier = Value::Ident(current_token.clone());
+                            let identifier = self.lex_current_token(current_token.clone());
                             tokens.push(Token {
                                 value: identifier,
                                 position: position.clone(),
@@ -173,7 +174,7 @@ impl Lexer {
             }
 
             if !is_comment && !in_quote && !is_others && !current_token.is_empty() {
-                let identifier = Value::Ident(current_token.clone());
+                let identifier = self.lex_current_token(current_token.clone());
                 tokens.insert(
                     tokens.len() - 1,
                     Token {

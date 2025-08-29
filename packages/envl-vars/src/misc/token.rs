@@ -8,6 +8,7 @@ pub enum Value {
     LeftSquareBracket,
     RightCurlyBracket,
     LeftCurlyBracket,
+    Struct,
     Comma,
     Colon,
     Equal,

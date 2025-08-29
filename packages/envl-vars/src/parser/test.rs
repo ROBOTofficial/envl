@@ -145,7 +145,7 @@ mod parser_test {
 
     #[test]
     fn struct_test() {
-        let result = gen_vars("variable = { abc: 12345, efg: true };".to_string());
+        let result = gen_vars("variable = struct { abc: 12345, efg: true };".to_string());
         assert_eq!(
             result,
             vec![VariableWithoutPosition {
@@ -164,7 +164,7 @@ mod parser_test {
     #[test]
     fn struct_and_array_test() {
         let result = gen_vars(
-            "variable = { abc: { efg: [ true ] }, hij: 12345 }; variable2 = [ { abc: true }, 12345 ];".to_string()
+            "variable = struct { abc: struct { efg: [ true ] }, hij: 12345 }; variable2 = [ struct { abc: true }, 12345 ];".to_string()
         );
         assert_eq!(
             result,

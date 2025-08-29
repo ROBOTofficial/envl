@@ -8,7 +8,7 @@ use crate::{
     },
     parser::error::{
         duplicate_error, ErrorKind, ARRAY_AFTER_EQUAL, ARRAY_INVALID_CLOSE, COLON_POSITION,
-        COMMA_POSITION, DIFFERENT_ORDER, STRUCT_AFTER_EQUAL, STRUCT_INVALID_CLOSE,
+        COMMA_POSITION, DIFFERENT_ORDER, INVALID_SYNTAX, STRUCT_AFTER_EQUAL, STRUCT_INVALID_CLOSE,
     },
 };
 
@@ -128,7 +128,7 @@ impl Parser {
                         });
                         break 'parse_loop;
                     }
-                    Value::LeftCurlyBracket => match self.parse_struct(&mut tokens) {
+                    Value::Struct => match self.parse_struct(&mut tokens) {
                         Ok(v) => {
                             if var.name.is_some() && var.value.is_none() && equal_used {
                                 var = Var {
@@ -234,7 +234,15 @@ impl Parser {
                             }
                         }
                     }
-                    _ => {}
+                    _ => {
+                        parser_error = Some(ParserError {
+                            kind: INVALID_SYNTAX.kind,
+                            code: INVALID_SYNTAX.code,
+                            message: INVALID_SYNTAX.message.to_string(),
+                            position: token.position.clone(),
+                        });
+                        break 'parse_loop;
+                    }
                 }
             } else {
                 break 'parse_loop;

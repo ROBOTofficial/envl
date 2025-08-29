@@ -8,7 +8,8 @@ use crate::{
     parser::{
         error::{
             duplicate_error, COLON_POSITION, COLON_REQUIRED, COMMA_POSITION, COMMA_REQUIRED,
-            INVALID_ARRAY_POSITION, ITEM_NAME_NOT_SET, STRUCT_CLOSED, SYNTAX_IN_STRUCT,
+            INVALID_ARRAY_POSITION, INVALID_SYNTAX, ITEM_NAME_NOT_SET, STRUCT_CLOSED,
+            SYNTAX_IN_STRUCT,
         },
         Parser, ParserError,
     },
@@ -19,6 +20,7 @@ impl Parser {
         &self,
         tokens: &mut Iter<'a, Token>,
     ) -> Result<VariableValue, ParserError> {
+        let mut in_block = false;
         let mut hm = HashMap::new();
         let mut parser_error = None;
         let mut comma_used = false;
@@ -56,7 +58,29 @@ impl Parser {
                 last_position = Some(token.position.clone());
 
                 match &token.value {
-                    Value::LeftCurlyBracket => match self.parse_struct(tokens) {
+                    Value::LeftCurlyBracket => {
+                        in_block = true;
+                        continue 'parse_struct_loop;
+                    }
+                    Value::RightCurlyBracket => {
+                        struct_closed = true;
+                        break 'parse_struct_loop;
+                    }
+                    _ => {}
+                }
+
+                if !in_block {
+                    parser_error = Some(ParserError {
+                        kind: INVALID_SYNTAX.kind,
+                        code: INVALID_SYNTAX.code,
+                        message: INVALID_SYNTAX.message.to_string(),
+                        position: token.position.clone(),
+                    });
+                    break 'parse_struct_loop;
+                }
+
+                match &token.value {
+                    Value::Struct => match self.parse_struct(tokens) {
                         Ok(value) => match element_name {
                             Some(name) => {
                                 if !colon_used {
@@ -95,10 +119,6 @@ impl Parser {
                             break 'parse_struct_loop;
                         }
                     },
-                    Value::RightCurlyBracket => {
-                        struct_closed = true;
-                        break 'parse_struct_loop;
-                    }
                     Value::LeftSquareBracket => match self.parse_array(tokens) {
                         Ok(value) => {
                             if let Some(name) = element_name {
@@ -209,7 +229,6 @@ impl Parser {
                             break 'parse_struct_loop;
                         }
                     },
-                    Value::Comment(_) => {}
                     _ => {
                         parser_error = Some(ParserError {
                             kind: SYNTAX_IN_STRUCT.kind,

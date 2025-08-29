@@ -128,10 +128,11 @@ mod lexer_test {
 
     #[test]
     fn struct_test() {
-        let tokens = generate_tokens("variable = { abc: 12345, efg: true };".to_string());
+        let tokens = generate_tokens("variable = struct { abc: 12345, efg: true };".to_string());
         let expect_arr = vec![
             Value::Ident("variable".to_string()),
             Value::Equal,
+            Value::Struct,
             Value::LeftCurlyBracket,
             Value::Ident("abc".to_string()),
             Value::Colon,

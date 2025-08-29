@@ -106,3 +106,8 @@ pub fn duplicate_error(name: &String) -> EnvlVarsError {
         message: message_ref,
     }
 }
+pub const INVALID_SYNTAX: EnvlVarsError = EnvlVarsError {
+    kind: ErrorKind::SyntaxError,
+    code: 19,
+    message: "That syntax can't be used",
+};

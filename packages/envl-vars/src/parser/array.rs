@@ -62,7 +62,7 @@ impl Parser {
                         }
                         comma_used = true;
                     }
-                    Value::LeftCurlyBracket => match self.parse_struct(tokens) {
+                    Value::Struct => match self.parse_struct(tokens) {
                         Ok(value) => {
                             if !array_contents.is_empty() && !comma_used {
                                 parser_error = Some(ParserError {
