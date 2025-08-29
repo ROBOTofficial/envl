@@ -12,3 +12,5 @@ crate-type = ["rlib", "cdylib"]
 
 [dependencies]
 tokio = { version = "1.47.1", features = ["full"] }
+envl-config = { version = "0.2.0" }
+envl-vars = { version = "1.0.0" }
