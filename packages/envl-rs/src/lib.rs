@@ -12,16 +12,20 @@ use envl_vars::{
 };
 use std::{collections::HashMap, env::current_dir, fs::File, io::Read, path::PathBuf};
 
-use crate::misc::{
-    error::{
-        convert_envl_config_error, convert_envl_lib_error, convert_envl_vars_error,
-        convert_io_error, EnvlError, EnvlLibError,
+use crate::{
+    misc::{
+        error::{
+            convert_envl_config_error, convert_envl_lib_error, convert_envl_vars_error,
+            convert_io_error, EnvlError, EnvlLibError,
+        },
+        filesystem::read_file,
+        vars::vars_to_hashmap,
     },
-    filesystem::read_file,
-    vars::vars_to_hashmap,
+    var::parse_var,
 };
 
 pub mod misc;
+pub mod var;
 
 pub trait Env {
     fn from_hashmap<T: Env>(hashmap: VariableHashMap) -> Result<T, EnvlError>;
@@ -29,10 +33,11 @@ pub trait Env {
 
 #[derive(Debug, Clone)]
 pub struct VarData {
+    pub value: Value,
     pub v_type: Type,
     pub default_value: Value,
     pub actions_value: Value,
-    pub value: VariableValue,
+    pub basic_value: VariableValue,
     pub position: Position,
 }
 
@@ -71,16 +76,24 @@ fn load_envl_core<T: Env>(
 
             for (name, value) in config.vars {
                 if let Some(v) = vars_hm.get(&name) {
-                    result.insert(
-                        name,
-                        VarData {
-                            v_type: value.v_type.clone(),
-                            default_value: value.default_value,
-                            actions_value: value.actions_value,
-                            value: v.value.clone(),
-                            position: v.position.clone(),
-                        },
-                    );
+                    match parse_var(value.v_type.clone(), v.value.clone()) {
+                        Ok(var) => {
+                            result.insert(
+                                name,
+                                VarData {
+                                    value: var,
+                                    v_type: value.v_type.clone(),
+                                    default_value: value.default_value,
+                                    actions_value: value.actions_value,
+                                    basic_value: v.value.clone(),
+                                    position: v.position.clone(),
+                                },
+                            );
+                        }
+                        Err(err) => {
+                            return Err(err);
+                        }
+                    }
                 } else {
                     return Err(convert_envl_lib_error(EnvlLibError {
                         message: format!("{} is not foud", &name),
