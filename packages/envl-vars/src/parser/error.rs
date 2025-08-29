@@ -6,6 +6,7 @@ pub enum ErrorKind {
     MultipleCharacters,
 }
 
+#[derive(Debug, Clone)]
 pub struct EnvlVarsError {
     pub kind: ErrorKind,
     pub code: u32,

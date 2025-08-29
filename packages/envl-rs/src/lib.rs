@@ -4,37 +4,24 @@ use envl_config::{
         config::Config,
         variable::{Type, Value},
     },
-    parser::error::ParserError as ConfigParserError,
 };
 use envl_vars::{
     generate_ast as gen_vars_ast,
     misc::position::Position,
     misc::variable::{Variable, VariableValue},
-    parser::ParserError as VarsParserError,
 };
-use std::{
-    collections::HashMap,
-    env::current_dir,
-    fs::File,
-    io::{Error, Read},
-};
+use std::{collections::HashMap, env::current_dir, fs::File, io::Read};
 
-use crate::misc::vars::vars_to_hashmap;
+use crate::misc::{
+    error::{
+        convert_envl_config_error, convert_envl_lib_error, convert_envl_vars_error,
+        convert_io_error, EnvlError, EnvlLibError,
+    },
+    vars::vars_to_hashmap,
+};
 
 pub mod misc;
 pub mod test;
-
-#[derive(Debug, Clone)]
-pub struct EnvlLibError {
-    pub message: String,
-}
-
-pub enum EnvlError {
-    Vars(VarsParserError),
-    Config(ConfigParserError),
-    Original(EnvlLibError),
-    Error(Error),
-}
 
 pub trait Env {
     fn from_hashmap<T>(hashmap: VariableHashMap) -> Result<T, EnvlError>;
@@ -61,10 +48,10 @@ pub fn load_envl<T: Env>() -> Result<T, EnvlError> {
                     let _ = f.read_to_string(&mut buf);
                     load_envl_core(config_file_path.display().to_string(), buf)
                 }
-                Err(err) => Err(EnvlError::Error(err)),
+                Err(err) => Err(convert_io_error(err)),
             }
         }
-        Err(err) => Err(EnvlError::Error(err)),
+        Err(err) => Err(convert_io_error(err)),
     }
 }
 
@@ -87,7 +74,7 @@ fn load_envl_core<T: Env>(file_path: String, code: String) -> Result<T, EnvlErro
                         },
                     );
                 } else {
-                    return Err(EnvlError::Original(EnvlLibError {
+                    return Err(convert_envl_lib_error(EnvlLibError {
                         message: format!("{} is not foud", &name),
                     }));
                 }
@@ -103,8 +90,8 @@ pub fn load_files(file_path: String, code: String) -> Result<(Vec<Variable>, Con
     match gen_config_ast(file_path.clone(), code.clone()) {
         Ok(config) => match gen_vars_ast(file_path, code) {
             Ok(vars) => Ok((vars, config)),
-            Err(err) => Err(EnvlError::Vars(err)),
+            Err(err) => Err(convert_envl_vars_error(err)),
         },
-        Err(err) => Err(EnvlError::Config(err)),
+        Err(err) => Err(convert_envl_config_error(err)),
     }
 }
