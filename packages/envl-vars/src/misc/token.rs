@@ -1,6 +1,6 @@
 use crate::misc::position::Position;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Value {
     Comment(String),
     Ident(String),
@@ -14,7 +14,7 @@ pub enum Value {
     Semi,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Token {
     pub value: Value,
     pub position: Position,
