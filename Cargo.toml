@@ -2,9 +2,9 @@
 resolver = "3"
 members = [
     "packages/envl-rs",
-    "packages/envl-core",
     "packages/envl-config",
-    "packages/envl-vars"
+    "packages/envl-vars",
+    "packages/envl-cli"
 ]
 
 [workspace.package]
@@ -15,7 +15,7 @@ rust-version = "1.75"
 
 [patch.crates-io]
 envl = { path = "packages/envl-rs" }
-envl-core = { path = "packages/envl-core" }
+envl-cli = { path = "packages/envl-cli" }
 envl-vars = { path = "packages/envl-vars" }
 envl-config = { path = "packages/envl-config" }
 

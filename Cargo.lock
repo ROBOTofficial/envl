@@ -64,15 +64,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "envl-config"
+name = "envl-cli"
 version = "0.1.0"
 
 [[package]]
-name = "envl-core"
+name = "envl-config"
 version = "0.1.0"
-dependencies = [
- "tokio",
-]
 
 [[package]]
 name = "envl-vars"
