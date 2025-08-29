@@ -22,7 +22,6 @@ use crate::misc::{
 };
 
 pub mod misc;
-pub mod test;
 
 pub trait Env {
     fn from_hashmap<T>(hashmap: VariableHashMap) -> Result<T, EnvlError>;
