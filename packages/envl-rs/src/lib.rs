@@ -41,7 +41,7 @@ pub struct VarData {
     pub position: Position,
 }
 
-pub type VariableHashMap = HashMap<String, VarData>;
+pub type VariableHashMap = HashMap<String, Value>;
 
 pub fn load_envl<T: Env>() -> Result<T, EnvlError> {
     match current_dir() {
@@ -78,26 +78,23 @@ fn load_envl_core<T: Env>(
                 if let Some(v) = vars_hm.get(&name) {
                     match parse_var(value.v_type.clone(), v.value.clone()) {
                         Ok(var) => {
-                            result.insert(
-                                name,
-                                VarData {
-                                    value: var,
-                                    v_type: value.v_type.clone(),
-                                    default_value: value.default_value,
-                                    actions_value: value.actions_value,
-                                    basic_value: v.value.clone(),
-                                    position: v.position.clone(),
-                                },
-                            );
+                            result.insert(name, var);
                         }
                         Err(err) => {
                             return Err(err);
                         }
                     }
                 } else {
-                    return Err(convert_envl_lib_error(EnvlLibError {
-                        message: format!("{} is not foud", &name),
-                    }));
+                    match value.v_type {
+                        Type::Option(_) => {
+                            result.insert(name, Value::Null);
+                        }
+                        _ => {
+                            return Err(convert_envl_lib_error(EnvlLibError {
+                                message: format!("{} is not foud", &name),
+                            }));
+                        }
+                    };
                 }
             }
 

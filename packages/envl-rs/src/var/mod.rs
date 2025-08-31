@@ -54,6 +54,12 @@ pub fn parse_var(t: Type, v: VariableValue) -> Result<Value, EnvlError> {
             }
             _ => {}
         },
+        Type::Option(t) => {
+            return match parse_var(*t.to_owned(), v) {
+                Ok(value) => Ok(Value::Option(Box::from(value))),
+                Err(err) => Err(err),
+            };
+        }
         Type::Array(boxed_type) => match &v {
             VariableValue::Array(elements) => {
                 let element_type = *boxed_type.clone();

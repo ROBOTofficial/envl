@@ -25,4 +25,5 @@ pub enum Value {
     Bool(bool),
     Array(Vec<Value>),
     Struct(HashMap<String, Value>),
+    Option(Box<Value>),
 }
