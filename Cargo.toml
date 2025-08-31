@@ -5,6 +5,7 @@ members = [
     "packages/envl-config",
     "packages/envl-vars",
     "packages/envl-cli",
+    "packages/envl-utils",
     "tests/envl-rs-test"
 ]
 
@@ -19,5 +20,6 @@ envl = { path = "packages/envl-rs" }
 envl-cli = { path = "packages/envl-cli" }
 envl-vars = { path = "packages/envl-vars" }
 envl-config = { path = "packages/envl-config" }
+envl-utils = { path = "packages/envl-utils" }
 
 [workspace.lints.clippy]
