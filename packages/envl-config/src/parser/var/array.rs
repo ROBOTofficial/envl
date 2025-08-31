@@ -8,7 +8,7 @@ use crate::{
             INVALID_SYNTAX,
         },
         var::parse_struct::parse_struct,
-        vars::option::ParsedValue,
+        vars::option_value::ParsedValue,
     },
 };
 

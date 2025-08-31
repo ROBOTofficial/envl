@@ -13,13 +13,13 @@ use crate::{
             INVALID_LEFT_CURLY_POSITION, INVALID_SYNTAX, INVALID_SYNTAX_IN_VARS,
             MUST_IN_VARS_BLOCK, VARS_CLOSED,
         },
-        vars::option::parse_parsed_value,
+        vars::option_value::parse_parsed_value,
         Parser,
     },
 };
 
 pub mod array;
-pub mod option;
+pub mod option_value;
 pub mod parse_struct;
 
 impl Parser {
