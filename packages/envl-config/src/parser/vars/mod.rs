@@ -175,7 +175,7 @@ impl Parser {
                             error!(ELEMENT_NAME_REQUIRED);
                         }
                     }
-                    Value::LeftParentheses => match self.parse_option(tokens) {
+                    Value::LeftParentheses => match self.parse_option_value(tokens) {
                         Ok((default_value, actions_value)) => {
                             if let Some(ref name) = inserted_element_name {
                                 if let Some(var) = vars.get(name) {

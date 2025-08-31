@@ -88,7 +88,7 @@ pub fn parse_parsed_value(
 }
 
 impl Parser {
-    pub fn parse_option<'a>(
+    pub fn parse_option_value<'a>(
         &self,
         tokens: &mut Iter<'a, Token>,
     ) -> Result<(ParsedValue, ParsedValue), ParserError> {
