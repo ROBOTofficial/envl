@@ -1,7 +1,6 @@
-use crate::misc::{
-    position::Position,
-    token::{Token, Value},
-};
+use envl_utils::types::Position;
+
+use crate::misc::token::{Token, Value};
 
 pub mod current_token;
 

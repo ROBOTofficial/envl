@@ -1,5 +1,7 @@
+use envl_utils::types::Position;
+
 use crate::{
-    misc::{num::is_num, position::Position, variable::VariableValue},
+    misc::{num::is_num, variable::VariableValue},
     parser::{
         error::{INVALID_TYPE, MULTIPLE_CHAR},
         Parser, ParserError,

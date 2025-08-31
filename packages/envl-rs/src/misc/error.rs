@@ -1,6 +1,7 @@
 use std::io::Error;
 
-use envl_config::{misc::position::Position, parser::error::ParserError};
+use envl_config::parser::error::ParserError;
+use envl_utils::types::Position;
 use envl_vars::parser::ParserError as VarsParserError;
 
 #[derive(Debug, Clone)]

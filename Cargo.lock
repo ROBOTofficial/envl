@@ -157,6 +157,7 @@ name = "envl"
 version = "0.1.0"
 dependencies = [
  "envl-config",
+ "envl-utils",
  "envl-vars",
  "tokio",
 ]
@@ -179,6 +180,9 @@ dependencies = [
 [[package]]
 name = "envl-config"
 version = "0.2.0"
+dependencies = [
+ "envl-utils",
+]
 
 [[package]]
 name = "envl-rs-test"
@@ -194,6 +198,9 @@ version = "0.1.0"
 [[package]]
 name = "envl-vars"
 version = "1.0.0"
+dependencies = [
+ "envl-utils",
+]
 
 [[package]]
 name = "gimli"

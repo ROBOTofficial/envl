@@ -1,7 +1,8 @@
+use envl_utils::types::Position;
+
 use crate::{
     misc::{
         config::Config,
-        position::Position,
         token::{Token, Value},
     },
     parser::error::{

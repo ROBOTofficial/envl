@@ -1,9 +1,10 @@
 use std::slice::Iter;
 
+use envl_utils::types::Position;
+
 use crate::{
     misc::{
         config::{Setting, Settings},
-        position::Position,
         token::{Token, Value},
     },
     parser::{

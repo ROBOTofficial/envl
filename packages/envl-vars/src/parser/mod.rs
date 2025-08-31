@@ -1,8 +1,9 @@
 use std::collections::HashSet;
 
+use envl_utils::types::Position;
+
 use crate::{
     misc::{
-        position::Position,
         token::{Token, Value},
         variable::{Variable, VariableValue},
     },

@@ -1,7 +1,6 @@
-use crate::{
-    misc::position::Position,
-    parser::{error::DIFFERENT_ORDER, ParsedIdent, Parser, ParserError, Var},
-};
+use envl_utils::types::Position;
+
+use crate::parser::{error::DIFFERENT_ORDER, ParsedIdent, Parser, ParserError, Var};
 
 impl Parser {
     pub fn parse_ident(

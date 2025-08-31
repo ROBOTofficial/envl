@@ -1,8 +1,9 @@
 use std::slice::Iter;
 
+use envl_utils::types::Position;
+
 use crate::{
     misc::{
-        position::Position,
         token::{Token, Value},
         variable::Type,
     },

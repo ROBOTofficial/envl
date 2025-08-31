@@ -1,9 +1,8 @@
 use std::collections::HashMap;
 
-use crate::misc::{
-    position::Position,
-    variable::{Type, Value},
-};
+use envl_utils::types::Position;
+
+use crate::misc::variable::{Type, Value};
 
 #[derive(Debug, Clone)]
 pub struct Setting<T> {

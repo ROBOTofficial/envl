@@ -5,9 +5,9 @@ use envl_config::{
         variable::{Type, Value},
     },
 };
+use envl_utils::types::Position;
 use envl_vars::{
     generate_ast as gen_vars_ast,
-    misc::position::Position,
     misc::variable::{Variable, VariableValue},
 };
 use std::{collections::HashMap, env::current_dir, fs::File, io::Read, path::PathBuf};

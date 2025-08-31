@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::misc::position::Position;
+use envl_utils::types::Position;
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum VariableValue {
