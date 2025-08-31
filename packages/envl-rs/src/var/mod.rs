@@ -7,6 +7,9 @@ use crate::misc::error::{convert_envl_lib_error, EnvlError, EnvlLibError};
 
 pub fn parse_var(t: Type, v: VariableValue) -> Result<Value, EnvlError> {
     match &t {
+        Type::Null => {
+            return Ok(Value::Null);
+        }
         Type::String => match &v {
             VariableValue::String(value) => {
                 return Ok(Value::String(value.clone()));
@@ -96,7 +99,6 @@ pub fn parse_var(t: Type, v: VariableValue) -> Result<Value, EnvlError> {
             }
             _ => {}
         },
-        _ => {}
     }
 
     Err(convert_envl_lib_error(EnvlLibError {
