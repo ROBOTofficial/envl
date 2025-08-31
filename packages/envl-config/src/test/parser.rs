@@ -310,4 +310,56 @@ pub mod parser_test {
             }
         )
     }
+
+    #[test]
+    fn optional_test() {
+        let config = gen_parsed_obj(include_str!("./files/optional.test.envl").to_string());
+        assert_eq!(
+            config,
+            ConfigWithoutPosition {
+                settings: SettingsWithoutPosition {
+                    envl_file_path: None
+                },
+                vars: HashMap::from([
+                    (
+                        "a".to_string(),
+                        VarWithoutPosition {
+                            v_type: Type::Option(Box::from(Type::Bool)),
+                            default_value: Value::Null,
+                            actions_value: Value::Null
+                        }
+                    ),
+                    (
+                        "b".to_string(),
+                        VarWithoutPosition {
+                            v_type: Type::Option(Box::from(Type::Array(Box::from(Type::Int)))),
+                            default_value: Value::Null,
+                            actions_value: Value::Null
+                        }
+                    ),
+                    (
+                        "c".to_string(),
+                        VarWithoutPosition {
+                            v_type: Type::Option(Box::from(Type::Struct(HashMap::from([
+                                ("a".to_string(), Type::Bool),
+                                ("b".to_string(), Type::Option(Box::from(Type::Int)))
+                            ])))),
+                            default_value: Value::Null,
+                            actions_value: Value::Null
+                        }
+                    ),
+                    (
+                        "d".to_string(),
+                        VarWithoutPosition {
+                            v_type: Type::Option(Box::from(Type::Array(Box::from(Type::Option(
+                                Box::from(Type::String)
+                            ))))),
+                            default_value: Value::Null,
+                            actions_value: Value::Null
+                        }
+                    )
+                ])
+            }
+        )
+    }
 }

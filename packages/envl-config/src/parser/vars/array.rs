@@ -56,6 +56,20 @@ impl Parser {
                 }
 
                 match &token.value {
+                    Value::Option => {
+                        if array_type.is_some() {
+                            error!(INVALID_TYPE);
+                        }
+                        match self.parse_option(tokens) {
+                            Ok(v) => {
+                                array_type = Some(v);
+                            }
+                            Err(err) => {
+                                parser_error = Some(err);
+                                break 'parse_loop;
+                            }
+                        }
+                    }
                     Value::Array => {
                         if array_type.is_some() {
                             error!(INVALID_TYPE);

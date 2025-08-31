@@ -175,3 +175,8 @@ pub const IN_BLOCK: EnvlConfigErrorTemplate = EnvlConfigErrorTemplate {
     code: 26,
     message: "Write within the block",
 };
+pub const INVALID_OPTIONAL: EnvlConfigErrorTemplate = EnvlConfigErrorTemplate {
+    kind: ErrorKind::SyntaxError,
+    code: 27,
+    message: "Invalid optional type",
+};

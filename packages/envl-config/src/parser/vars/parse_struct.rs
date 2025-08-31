@@ -111,6 +111,15 @@ impl Parser {
                     Value::Type(t) => {
                         insert_target_value!(t);
                     }
+                    Value::Option => match self.parse_option(tokens) {
+                        Ok(v) => {
+                            insert_target_value!(v);
+                        }
+                        Err(err) => {
+                            parser_error = Some(err);
+                            break 'parse_loop;
+                        }
+                    },
                     Value::Array => match self.parse_array(tokens) {
                         Ok(v) => {
                             insert_target_value!(v);

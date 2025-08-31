@@ -11,6 +11,7 @@ pub enum Type {
     Bool,
     Array(Box<Type>),
     Struct(HashMap<String, Type>),
+    Option(Box<Type>),
 }
 
 #[derive(Debug, Clone, PartialEq)]

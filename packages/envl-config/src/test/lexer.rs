@@ -430,4 +430,69 @@ mod lexer_test {
             ]
         )
     }
+
+    #[test]
+    fn optional_test() {
+        let tokens = generate_tokens(include_str!("./files/optional.test.envl").to_string());
+        assert_eq!(
+            tokens,
+            vec![
+                Value::Settings,
+                Value::LeftCurlyBracket,
+                Value::RightCurlyBracket,
+                Value::Vars,
+                Value::LeftCurlyBracket,
+                Value::Ident("a".to_string()),
+                Value::Colon,
+                Value::Option,
+                Value::LeftShift,
+                Value::Type(Type::Bool),
+                Value::RightShift,
+                Value::Comma,
+                Value::Ident("b".to_string()),
+                Value::Colon,
+                Value::Option,
+                Value::LeftShift,
+                Value::Array,
+                Value::LeftShift,
+                Value::Type(Type::Int),
+                Value::RightShift,
+                Value::RightShift,
+                Value::Comma,
+                Value::Ident("c".to_string()),
+                Value::Colon,
+                Value::Option,
+                Value::LeftShift,
+                Value::Struct,
+                Value::LeftCurlyBracket,
+                Value::Ident("a".to_string()),
+                Value::Colon,
+                Value::Type(Type::Bool),
+                Value::Semi,
+                Value::Ident("b".to_string()),
+                Value::Colon,
+                Value::Option,
+                Value::LeftShift,
+                Value::Type(Type::Int),
+                Value::RightShift,
+                Value::Semi,
+                Value::RightCurlyBracket,
+                Value::RightShift,
+                Value::Comma,
+                Value::Ident("d".to_string()),
+                Value::Colon,
+                Value::Option,
+                Value::LeftShift,
+                Value::Array,
+                Value::LeftShift,
+                Value::Option,
+                Value::LeftShift,
+                Value::Type(Type::String),
+                Value::RightShift,
+                Value::RightShift,
+                Value::RightShift,
+                Value::RightCurlyBracket,
+            ]
+        )
+    }
 }

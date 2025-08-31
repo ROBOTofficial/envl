@@ -1,0 +1,11 @@
+settings {}
+
+vars {
+    a: Option<bool>,
+    b: Option<Array<int>>,
+    c: Option<struct {
+        a: bool;
+        b: Option<int>;
+    }>,
+    d: Option<Array<Option<string>>>
+}

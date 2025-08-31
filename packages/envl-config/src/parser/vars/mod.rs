@@ -19,6 +19,7 @@ use crate::{
 };
 
 pub mod array;
+pub mod option;
 pub mod option_value;
 pub mod parse_struct;
 
@@ -118,6 +119,27 @@ impl Parser {
                             error!(ELEMENT_NAME_REQUIRED);
                         }
                     }
+                    Value::Option => match self.parse_option(tokens) {
+                        Ok(t) => {
+                            if let Some(name) = element_name {
+                                insert!(
+                                    name,
+                                    Var {
+                                        v_type: t.clone(),
+                                        default_value: VarValue::Null,
+                                        actions_value: VarValue::Null,
+                                        position: token.position.to_owned()
+                                    }
+                                );
+                            } else {
+                                error!(ELEMENT_NAME_REQUIRED);
+                            }
+                        }
+                        Err(err) => {
+                            parser_error = Some(err);
+                            break 'parse_loop;
+                        }
+                    },
                     Value::Array => match self.parse_array(tokens) {
                         Ok(t) => {
                             if let Some(name) = element_name {

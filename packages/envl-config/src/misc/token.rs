@@ -17,6 +17,7 @@ pub enum Value {
     LeftShift,
     Settings,
     Struct,
+    Option,
     Array,
     Comma,
     Colon,
