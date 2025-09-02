@@ -1,4 +1,0 @@
-use envl::VariableHashMap;
-
-#[derive(Debug, Clone)]
-pub struct Env {

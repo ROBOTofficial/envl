@@ -1,5 +1,0 @@
-}
-
-impl Envl {
-    fn from_hashmap<T: Env>(hashmap: HashMap<String, VariableHashMap>) -> Result<T, EnvlError> {}
-}
