@@ -56,7 +56,7 @@ pub fn parse_var(t: Type, v: VariableValue) -> Result<Value, EnvlError> {
         },
         Type::Option(t) => {
             return match parse_var(*t.to_owned(), v) {
-                Ok(value) => Ok(Value::Option(Box::from(value))),
+                Ok(value) => Ok(value),
                 Err(err) => Err(err),
             };
         }
