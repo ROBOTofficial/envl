@@ -1,12 +1,7 @@
-use std::env::current_dir;
+use std::{env::current_dir, fs::File, io::Read};
 
 use clap::{Parser, Subcommand};
-use envl::{
-    generator::generate_file,
-    misc::filesystem::{read_file, write_file},
-};
-use envl_config::generate_ast;
-
+use envl::{generator::generate_file, load_envl_core, misc::filesystem::write_file};
 #[derive(Parser, Debug, Clone)]
 #[command(version, about, flatten_help = true)]
 struct Args {
@@ -23,12 +18,15 @@ fn main() {
     let args = Args::parse();
     let current_dir = current_dir().unwrap();
     let config_path = current_dir.join(".envlconf").display().to_string();
-    let code = read_file(config_path.to_owned()).unwrap();
-    let config = generate_ast(config_path.to_owned(), code).unwrap();
 
     match args.command {
         Command::Build { output } => {
-            let f = generate_file(config, output.clone()).unwrap();
+            let mut code = String::new();
+            let _ = File::open(&config_path).unwrap().read_to_string(&mut code);
+
+            let data = load_envl_core(current_dir.clone(), config_path, code).unwrap();
+
+            let f = generate_file(data, output.clone()).unwrap();
             write_file(current_dir.join(output).display().to_string(), f).unwrap();
         }
     }

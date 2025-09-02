@@ -61,7 +61,7 @@ pub fn load_envl() -> Result<VariableHashMap, EnvlError> {
     }
 }
 
-fn load_envl_core(
+pub fn load_envl_core(
     current_dir: PathBuf,
     config_file_path: String,
     code: String,

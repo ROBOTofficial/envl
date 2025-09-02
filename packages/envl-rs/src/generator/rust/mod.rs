@@ -1,9 +1,10 @@
 use std::io::Error;
 
-use envl_config::misc::config::Config;
 use quote::quote;
 
-pub fn generate_rust_file(config: Config) -> Result<String, Error> {
+use crate::VariableHashMap;
+
+pub fn generate_rust_file(data: VariableHashMap) -> Result<String, Error> {
     Ok(quote! {
         use envl::VariableHashMap;
         use envl_config::misc::variable::Value;
