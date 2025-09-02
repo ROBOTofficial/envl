@@ -24,12 +24,9 @@ use crate::{
     var::parse_var,
 };
 
+pub mod generator;
 pub mod misc;
 pub mod var;
-
-pub trait Env {
-    fn from_hashmap<T: Env>(hashmap: VariableHashMap) -> Result<T, EnvlError>;
-}
 
 #[derive(Debug, Clone)]
 pub struct VarData {
@@ -37,13 +34,13 @@ pub struct VarData {
     pub v_type: Type,
     pub default_value: Value,
     pub actions_value: Value,
-    pub basic_value: VariableValue,
+    pub basic_value: Option<VariableValue>,
     pub position: Position,
 }
 
-pub type VariableHashMap = HashMap<String, Value>;
+pub type VariableHashMap = HashMap<String, VarData>;
 
-pub fn load_envl<T: Env>() -> Result<T, EnvlError> {
+pub fn load_envl() -> Result<VariableHashMap, EnvlError> {
     match current_dir() {
         Ok(current_dir_path) => {
             let config_file_path = current_dir_path.join(".envlconf");
@@ -64,11 +61,11 @@ pub fn load_envl<T: Env>() -> Result<T, EnvlError> {
     }
 }
 
-fn load_envl_core<T: Env>(
+fn load_envl_core(
     current_dir: PathBuf,
     config_file_path: String,
     code: String,
-) -> Result<T, EnvlError> {
+) -> Result<VariableHashMap, EnvlError> {
     match load_files(current_dir, config_file_path, code) {
         Ok((vars, config)) => {
             let vars_hm = vars_to_hashmap(vars);
@@ -78,7 +75,17 @@ fn load_envl_core<T: Env>(
                 if let Some(v) = vars_hm.get(&name) {
                     match parse_var(value.v_type.clone(), v.value.clone()) {
                         Ok(var) => {
-                            result.insert(name, var);
+                            result.insert(
+                                name,
+                                VarData {
+                                    value: var,
+                                    v_type: value.v_type.clone(),
+                                    default_value: value.default_value,
+                                    actions_value: value.actions_value,
+                                    basic_value: Some(v.value.clone()),
+                                    position: v.position.clone(),
+                                },
+                            );
                         }
                         Err(err) => {
                             return Err(err);
@@ -87,7 +94,17 @@ fn load_envl_core<T: Env>(
                 } else {
                     match value.v_type {
                         Type::Option(_) => {
-                            result.insert(name, Value::Null);
+                            result.insert(
+                                name,
+                                VarData {
+                                    value: Value::Null,
+                                    v_type: value.v_type,
+                                    default_value: value.default_value,
+                                    actions_value: value.actions_value,
+                                    basic_value: None,
+                                    position: value.position,
+                                },
+                            );
                         }
                         _ => {
                             return Err(convert_envl_lib_error(EnvlLibError {
@@ -98,7 +115,7 @@ fn load_envl_core<T: Env>(
                 }
             }
 
-            T::from_hashmap::<T>(result)
+            Ok(result)
         }
         Err(err) => Err(err),
     }

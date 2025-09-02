@@ -7,11 +7,21 @@ license.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 
+[[bin]]
+name = "envl"
+path = "./src/cli.rs"
+
 [lib]
-crate-type = ["rlib", "cdylib"]
+crate-type = ["rlib", "staticlib"]
 
 [dependencies]
 tokio = { version = "1.47.1", features = ["full"] }
 envl-config = { path = "../envl-config" }
 envl-vars = { path = "../envl-vars" }
 envl-utils = { path = "../envl-utils" }
+proc-macro2 = { version = "1.0.101" }
+quote = { version = "1.0.40" }
+syn = { version = "2.0.106", features = ["full", "extra-traits"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1" }
+clap = { version = "4.5.46", features = ["derive"] }
