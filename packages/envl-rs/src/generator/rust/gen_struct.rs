@@ -1,4 +1,7 @@
-use std::{collections::HashMap, io::Error};
+use std::{
+    collections::HashMap,
+    io::{Error, ErrorKind},
+};
 
 use envl_config::misc::variable::{Type, Value};
 use proc_macro2::TokenStream;
@@ -8,7 +11,7 @@ use crate::generator::rust::value::gen_value;
 
 pub fn gen_struct(
     name: String,
-    t: Type,
+    t: HashMap<String, Type>,
     v: HashMap<String, Value>,
     structs: &mut Vec<String>,
 ) -> Result<TokenStream, Error> {
@@ -16,25 +19,29 @@ pub fn gen_struct(
     let struct_name = format!("struct{}", name).to_uppercase();
     let mut struct_values = Vec::new();
 
-    for (name, value) in v {
-        let element_name = match value {
-            Value::Struct(_) => {
-                format!("{}{}", name, struct_name)
+    for (n, element_type) in t {
+        if let Some(value) = v.get(&n) {
+            let element_name = match value {
+                Value::Struct(_) => {
+                    format!("{}{}", name.to_owned(), struct_name)
+                }
+                _ => name.to_owned(),
+            };
+            match gen_value(
+                element_name.to_owned(),
+                element_type.to_owned(),
+                value.to_owned(),
+                structs,
+            ) {
+                Ok(r) => {
+                    struct_values.push((element_name, r));
+                }
+                Err(err) => {
+                    return Err(err);
+                }
             }
-            _ => name,
-        };
-        match gen_value(
-            element_name.to_owned(),
-            t.to_owned(),
-            value.to_owned(),
-            structs,
-        ) {
-            Ok(r) => {
-                struct_values.push((element_name, r));
-            }
-            Err(err) => {
-                return Err(err);
-            }
+        } else {
+            return Err(Error::new(ErrorKind::Other, ""));
         }
     }
 

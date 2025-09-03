@@ -30,10 +30,12 @@ pub fn gen_value(
             _ => Err(Error::new(ErrorKind::Other, "Invalid Type")),
         },
         Value::Struct(value) => match &t {
-            Type::Struct(_) => match gen_struct(name, t.to_owned(), value.to_owned(), structs) {
-                Ok(r) => Ok(r),
-                Err(err) => Err(err),
-            },
+            Type::Struct(struct_type) => {
+                match gen_struct(name, struct_type.to_owned(), value.to_owned(), structs) {
+                    Ok(r) => Ok(r),
+                    Err(err) => Err(err),
+                }
+            }
             _ => Err(Error::new(ErrorKind::Other, "Invalid Type")),
         },
     };
