@@ -1,6 +1,7 @@
 use std::{collections::HashMap, io::Error};
 
 use envl_config::misc::variable::{Type, Value};
+use proc_macro2::TokenStream;
 use quote::quote;
 
 use crate::generator::rust::value::gen_value;
@@ -10,7 +11,7 @@ pub fn gen_struct(
     t: Type,
     v: HashMap<String, Value>,
     structs: &mut Vec<String>,
-) -> Result<String, Error> {
+) -> Result<TokenStream, Error> {
     let struct_type = format!("Struct{}", name);
     let struct_name = format!("struct{}", name).to_uppercase();
     let mut struct_values = Vec::new();
@@ -55,5 +56,9 @@ pub fn gen_struct(
         .to_string(),
     );
 
-    Ok(struct_name)
+    let result = struct_name.parse::<TokenStream>().unwrap();
+
+    Ok(quote! {
+        #result
+    })
 }

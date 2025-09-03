@@ -77,12 +77,12 @@ pub fn parse_var(name: String, var: VarData, structs: &mut Vec<String>) -> Resul
                 var.default_value.to_owned(),
                 structs,
             ) {
-                Ok(r) => Ok(r),
+                Ok(r) => Ok(r.to_string()),
                 Err(err) => Err(err),
             }
         }
         _ => match gen_value(name, var.v_type.to_owned(), var.value.to_owned(), structs) {
-            Ok(r) => Ok(r),
+            Ok(r) => Ok(r.to_string()),
             Err(err) => Err(err),
         },
     }

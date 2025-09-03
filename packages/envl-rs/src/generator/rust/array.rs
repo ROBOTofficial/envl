@@ -1,6 +1,7 @@
 use std::io::Error;
 
 use envl_config::misc::variable::{Type, Value};
+use proc_macro2::TokenStream;
 use quote::quote;
 
 use crate::generator::rust::value::gen_value;
@@ -10,7 +11,7 @@ pub fn gen_array(
     t: Type,
     v: Vec<Value>,
     structs: &mut Vec<String>,
-) -> Result<String, Error> {
+) -> Result<TokenStream, Error> {
     let mut vec_values = Vec::new();
 
     for value in v {
@@ -30,6 +31,5 @@ pub fn gen_array(
                 #vec_values,
             )*
         ])
-    }
-    .to_string())
+    })
 }
