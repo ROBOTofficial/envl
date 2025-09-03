@@ -14,7 +14,7 @@ pub fn gen_value(
 ) -> Result<TokenStream, Error> {
     let result = match &v {
         Value::Null => Ok(quote! {None}),
-        Value::String(s) => Ok(quote! {#s}),
+        Value::String(s) => Ok(quote! {String::from(#s)}),
         Value::Char(c) => Ok(quote! {#c}),
         Value::Float(f) => Ok(Literal::f64_unsuffixed(*f).to_token_stream()),
         Value::Int(i) => Ok(Literal::i64_unsuffixed(*i).to_token_stream()),

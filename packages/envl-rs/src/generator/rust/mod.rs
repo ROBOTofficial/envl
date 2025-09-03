@@ -125,11 +125,7 @@ pub fn generate_rust_file(data: VariableHashMap) -> Result<String, Error> {
         .collect::<Vec<_>>();
 
     Ok(quote! {
-        use envl::VariableHashMap;
-        use envl_config::misc::variable::Value;
-
         #(#structs)*
-        #(#struct_values)*
 
         #[derive(Debug, Clone)]
         pub struct Env {
@@ -138,11 +134,15 @@ pub fn generate_rust_file(data: VariableHashMap) -> Result<String, Error> {
             )*
         }
 
-        pub const ENV: Env = Env {
-            #(
-                #env_value,
-            )*
-        };
+        pub fn envl() -> Env {
+            #(#struct_values)*
+
+            Env {
+                #(
+                    #env_value,
+                )*
+            }
+        }
     }
     .to_string())
 }

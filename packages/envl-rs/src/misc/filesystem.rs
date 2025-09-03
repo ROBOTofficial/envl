@@ -1,5 +1,5 @@
 use std::{
-    fs::File,
+    fs::{File, OpenOptions},
     io::{Error, Read, Write},
     path::Path,
 };
@@ -19,7 +19,7 @@ pub fn read_file(file_path: String) -> Result<String, EnvlError> {
 
 pub fn write_file(file_path: String, txt: String) -> Result<usize, Error> {
     let f = if Path::new(&file_path).is_file() {
-        File::open(file_path)
+        OpenOptions::new().write(true).open(&file_path)
     } else {
         File::create(file_path)
     };
