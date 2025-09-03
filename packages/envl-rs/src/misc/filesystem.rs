@@ -24,7 +24,10 @@ pub fn write_file(file_path: String, txt: String) -> Result<usize, Error> {
         File::create(file_path)
     };
     match f {
-        Ok(mut f) => f.write(&txt.as_bytes()),
+        Ok(mut f) => {
+            let _ = f.write("".as_bytes());
+            f.write(&format!("{}\n", txt).as_bytes())
+        }
         Err(err) => Err(err),
     }
 }

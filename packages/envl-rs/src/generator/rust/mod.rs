@@ -128,12 +128,14 @@ pub fn generate_rust_file(data: VariableHashMap) -> Result<String, Error> {
         #(#structs)*
 
         #[derive(Debug, Clone)]
+        #[rustfmt::skip]
         pub struct Env {
             #(
                 pub #env_type,
             )*
         }
 
+        #[rustfmt::skip]
         pub fn envl() -> Env {
             #(#struct_values)*
 
