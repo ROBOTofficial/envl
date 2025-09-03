@@ -98,11 +98,19 @@ pub fn generate_rust_file(data: VariableHashMap) -> Result<String, Error> {
 
     let env_type = types_hm
         .iter()
-        .map(|(n, v)| quote! {stringify!(#n), stringify!(#v)})
+        .map(|(n, v)| {
+            let name = n.parse::<proc_macro2::TokenStream>().unwrap();
+            let value = v.parse::<proc_macro2::TokenStream>().unwrap();
+            quote! { #name: #value }
+        })
         .collect::<Vec<_>>();
     let env_value = value_hm
         .iter()
-        .map(|(n, v)| quote! {stringify!(#n), stringify!(#v)})
+        .map(|(n, v)| {
+            let name = n.parse::<proc_macro2::TokenStream>().unwrap();
+            let value = v.parse::<proc_macro2::TokenStream>().unwrap();
+            quote! { #name: #value }
+        })
         .collect::<Vec<_>>();
 
     Ok(quote! {

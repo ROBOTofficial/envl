@@ -47,10 +47,8 @@ pub fn parse_var(t: Type, v: VariableValue) -> Result<Value, EnvlError> {
             _ => {}
         },
         Type::Bool => match &v {
-            VariableValue::Number(n) => {
-                if let Ok(b) = n.parse::<bool>() {
-                    return Ok(Value::Bool(b));
-                }
+            VariableValue::Bool(b) => {
+                return Ok(Value::Bool(b.to_owned()));
             }
             _ => {}
         },
@@ -95,6 +93,7 @@ pub fn parse_var(t: Type, v: VariableValue) -> Result<Value, EnvlError> {
                             }
                         }
                     } else {
+                        dbg!(t.to_owned(), v.to_owned());
                         return Err(convert_envl_lib_error(EnvlLibError {
                             message: "Invalid type".to_string(),
                         }));

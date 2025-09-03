@@ -25,11 +25,11 @@ pub fn gen_array(
     }
 
     Ok(quote! {
-        vec![
+        Vec::from([
             #(
                 #vec_values,
             )*
-        ]
+        ])
     }
     .to_string())
 }
