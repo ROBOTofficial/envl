@@ -10,16 +10,16 @@ use envl_vars::{
     generate_ast as gen_vars_ast,
     misc::variable::{Variable, VariableValue},
 };
-use std::{collections::HashMap, env::current_dir, fs::File, io::Read, path::PathBuf};
+use std::{collections::HashMap, env::current_dir, path::PathBuf};
 
 use crate::{
-    generator::rust::value::gen_value,
+    generator::{generate_file, rust::value::gen_value},
     misc::{
         error::{
             convert_envl_config_error, convert_envl_lib_error, convert_envl_vars_error,
             convert_io_error, EnvlError, EnvlLibError,
         },
-        filesystem::read_file,
+        filesystem::{read_file, write_file},
         vars::vars_to_hashmap,
     },
     var::parse_var,
@@ -41,21 +41,31 @@ pub struct VarData {
 
 pub type VariableHashMap = HashMap<String, VarData>;
 
-pub fn load_envl() -> Result<VariableHashMap, EnvlError> {
+pub fn load_envl(output: String) -> Result<(), EnvlError> {
     match current_dir() {
         Ok(current_dir_path) => {
-            let config_file_path = current_dir_path.join(".envlconf");
-            match File::open(config_file_path.to_owned()) {
-                Ok(mut f) => {
-                    let mut buf = String::new();
-                    let _ = f.read_to_string(&mut buf);
-                    load_envl_core(
-                        current_dir_path,
-                        config_file_path.display().to_string(),
-                        buf,
-                    )
+            let config_file_path = current_dir_path.join(".envlconf").display().to_string();
+            match read_file(config_file_path.to_owned()) {
+                Ok(code) => {
+                    match load_envl_core(
+                        current_dir_path.to_owned(),
+                        config_file_path.to_owned(),
+                        code,
+                    ) {
+                        Ok(hm) => match generate_file(hm, output.to_owned()) {
+                            Ok(result) => {
+                                if let Err(err) = write_file(output, result) {
+                                    Err(convert_io_error(err))
+                                } else {
+                                    Ok(())
+                                }
+                            }
+                            Err(err) => Err(convert_io_error(err)),
+                        },
+                        Err(err) => Err(err),
+                    }
                 }
-                Err(err) => Err(convert_io_error(err)),
+                Err(err) => Err(err),
             }
         }
         Err(err) => Err(convert_io_error(err)),
