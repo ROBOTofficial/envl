@@ -1,0 +1,1 @@
+# [derive (Debug , Clone)] # [rustfmt :: skip] pub struct Env { pub b : i64 , pub a : String , pub c : bool , pub d : Vec < i64 > , } # [rustfmt :: skip] pub fn envl () -> Env { Env { c : true , a : String :: from ("123") , d : Vec :: from ([123 , 456 ,]) , b : 123 , } }
