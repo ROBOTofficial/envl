@@ -1,6 +1,7 @@
 use std::{collections::HashMap, io::Error};
 
 use envl_config::misc::variable::{Type, Value};
+use proc_macro2::TokenStream;
 use quote::quote;
 
 use crate::{generator::rust::value::gen_value, VarData, VariableHashMap};
@@ -9,19 +10,26 @@ pub mod array;
 pub mod gen_struct;
 pub mod value;
 
-pub fn parse_v_type(v_name: String, v_type: Type, structs: &mut Vec<String>) -> String {
+pub fn parse_v_type(v_name: String, v_type: Type, structs: &mut Vec<String>) -> TokenStream {
     match v_type {
-        Type::Array(boxed_element_type) => format!(
-            "Vec<{}>",
-            parse_v_type(v_name, *boxed_element_type, structs)
-        ),
-        Type::Bool => "bool".to_string(),
-        Type::Char => "char".to_string(),
-        Type::Float => "f64".to_string(),
-        Type::Int => "i64".to_string(),
-        Type::Null => "None".to_string(),
-        Type::String => "String".to_string(),
-        Type::Option(t) => format!("Option<{}>", parse_v_type(v_name, *t, structs)),
+        Type::Array(boxed_element_type) => {
+            let value = parse_v_type(v_name, *boxed_element_type, structs);
+            quote! {
+                Vec<#value>
+            }
+        }
+        Type::Bool => quote! {bool},
+        Type::Char => quote! {char},
+        Type::Float => quote! {f64},
+        Type::Int => quote! {i64},
+        Type::Null => quote! {None},
+        Type::String => quote! {String},
+        Type::Option(t) => {
+            let value = parse_v_type(v_name, *t, structs);
+            quote! {
+                Option<#value>
+            }
+        }
         Type::Struct(elements) => {
             let struct_name = format!("Struct{}", v_name);
             let struct_value = elements
@@ -50,9 +58,13 @@ pub fn parse_v_type(v_name: String, v_type: Type, structs: &mut Vec<String>) -> 
                 .to_string(),
             );
 
-            struct_name
+            let result = struct_name.parse::<TokenStream>().unwrap();
+
+            quote! {
+                #result
+            }
         }
-        Type::Uint => "u64".to_string(),
+        Type::Uint => quote! {u64},
     }
 }
 
@@ -100,8 +112,7 @@ pub fn generate_rust_file(data: VariableHashMap) -> Result<String, Error> {
         .iter()
         .map(|(n, v)| {
             let name = n.parse::<proc_macro2::TokenStream>().unwrap();
-            let value = v.parse::<proc_macro2::TokenStream>().unwrap();
-            quote! { #name: #value }
+            quote! { #name: #v }
         })
         .collect::<Vec<_>>();
     let env_value = value_hm
