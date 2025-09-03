@@ -13,6 +13,7 @@ use envl_vars::{
 use std::{collections::HashMap, env::current_dir, fs::File, io::Read, path::PathBuf};
 
 use crate::{
+    generator::rust::value::gen_value,
     misc::{
         error::{
             convert_envl_config_error, convert_envl_lib_error, convert_envl_vars_error,
@@ -92,33 +93,56 @@ pub fn load_envl_core(
                         }
                     }
                 } else {
-                    match value.v_type {
-                        Type::Option(_) => {
-                            result.insert(
-                                name,
-                                VarData {
-                                    value: Value::Null,
-                                    v_type: value.v_type,
-                                    default_value: value.default_value,
-                                    actions_value: value.actions_value,
-                                    basic_value: None,
-                                    position: value.position,
-                                },
-                            );
-                        }
-                        _ => {
-                            return Err(convert_envl_lib_error(EnvlLibError {
-                                message: format!("{} is not foud", &name),
-                            }));
-                        }
-                    };
+                    result.insert(
+                        name,
+                        VarData {
+                            value: Value::Null,
+                            v_type: value.v_type,
+                            default_value: value.default_value,
+                            actions_value: value.actions_value,
+                            basic_value: None,
+                            position: value.position,
+                        },
+                    );
                 }
             }
 
-            Ok(result)
+            if let Err(err) = check_envl_vars(result.to_owned()) {
+                Err(convert_envl_lib_error(err))
+            } else {
+                Ok(result)
+            }
         }
         Err(err) => Err(err),
     }
+}
+
+pub fn check_envl_vars(hm: HashMap<String, VarData>) -> Result<(), EnvlLibError> {
+    for (name, value) in hm {
+        if value.value == Value::Null {
+            match &value.default_value {
+                Value::Null => match &value.v_type {
+                    Type::Option(_) => {}
+                    _ => {
+                        return Err(EnvlLibError {
+                            message: "Invalid Type".to_string(),
+                        });
+                    }
+                },
+                v => {
+                    if gen_value(name, value.v_type.to_owned(), v.to_owned(), &mut Vec::new())
+                        .is_err()
+                    {
+                        return Err(EnvlLibError {
+                            message: "Invalid Type".to_string(),
+                        });
+                    }
+                }
+            }
+        }
+    }
+
+    Ok(())
 }
 
 pub fn load_files(

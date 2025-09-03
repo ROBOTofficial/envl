@@ -21,8 +21,9 @@ fn main() {
 
     match args.command {
         Command::Build { output } => {
+            let mut file = File::open(&config_path).unwrap();
             let mut code = String::new();
-            let _ = File::open(&config_path).unwrap().read_to_string(&mut code);
+            file.read_to_string(&mut code).unwrap();
 
             let data = load_envl_core(current_dir.clone(), config_path, code).unwrap();
 

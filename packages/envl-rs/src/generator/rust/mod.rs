@@ -3,7 +3,11 @@ use std::{collections::HashMap, io::Error};
 use envl_config::misc::variable::{Type, Value};
 use quote::quote;
 
-use crate::{VarData, VariableHashMap};
+use crate::{generator::rust::value::gen_value, VarData, VariableHashMap};
+
+pub mod array;
+pub mod gen_struct;
+pub mod value;
 
 pub fn parse_v_type(v_name: String, v_type: Type, structs: &mut Vec<String>) -> String {
     match v_type {
@@ -23,8 +27,14 @@ pub fn parse_v_type(v_name: String, v_type: Type, structs: &mut Vec<String>) -> 
             let struct_value = elements
                 .iter()
                 .map(|(n, v)| {
-                    let v_type = parse_v_type(n.to_owned(), v.to_owned(), structs);
-                    quote! {#n, #v_type}
+                    let name = match v {
+                        Type::Struct(_) => {
+                            format!("{}{}", n, struct_name)
+                        }
+                        _ => n.to_string(),
+                    };
+                    let v_type = parse_v_type(name.to_owned(), v.to_owned(), structs);
+                    quote! {#name, #v_type}
                 })
                 .collect::<Vec<_>>();
 
@@ -46,16 +56,51 @@ pub fn parse_v_type(v_name: String, v_type: Type, structs: &mut Vec<String>) -> 
     }
 }
 
+pub fn parse_var(name: String, var: VarData, structs: &mut Vec<String>) -> Result<String, Error> {
+    match var.value {
+        Value::Null => {
+            match gen_value(
+                name,
+                var.v_type.to_owned(),
+                var.default_value.to_owned(),
+                structs,
+            ) {
+                Ok(r) => Ok(r),
+                Err(err) => Err(err),
+            }
+        }
+        _ => match gen_value(name, var.v_type.to_owned(), var.value.to_owned(), structs) {
+            Ok(r) => Ok(r),
+            Err(err) => Err(err),
+        },
+    }
+}
+
 pub fn generate_rust_file(data: VariableHashMap) -> Result<String, Error> {
     let mut structs = Vec::new();
-    let mut hm = HashMap::new();
+    let mut struct_values = Vec::new();
+    let mut types_hm = HashMap::new();
+    let mut value_hm = HashMap::new();
 
     for (name, value) in data {
-        let parsed_type = parse_v_type(name.to_owned(), value.v_type, &mut structs);
-        hm.insert(name, parsed_type);
+        let parsed_type = parse_v_type(name.to_owned(), value.to_owned().v_type, &mut structs);
+        types_hm.insert(name.to_owned(), parsed_type);
+
+        match parse_var(name.to_owned(), value.to_owned(), &mut struct_values) {
+            Ok(v) => {
+                value_hm.insert(name, v);
+            }
+            Err(err) => {
+                return Err(err);
+            }
+        }
     }
 
-    let env_type = hm
+    let env_type = types_hm
+        .iter()
+        .map(|(n, v)| quote! {stringify!(#n), stringify!(#v)})
+        .collect::<Vec<_>>();
+    let env_value = value_hm
         .iter()
         .map(|(n, v)| quote! {stringify!(#n), stringify!(#v)})
         .collect::<Vec<_>>();
@@ -65,15 +110,20 @@ pub fn generate_rust_file(data: VariableHashMap) -> Result<String, Error> {
         use envl_config::misc::variable::Value;
 
         #(#structs)*
+        #(#struct_values)*
 
         #[derive(Debug, Clone)]
         pub struct Env {
             #(
-                #env_type,
+                pub #env_type,
             )*
         }
 
-        pub const ENV: Env = Env {};
+        pub const ENV: Env = Env {
+            #(
+                #env_value,
+            )*
+        };
     }
     .to_string())
 }
