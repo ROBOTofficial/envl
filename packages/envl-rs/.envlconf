@@ -1,8 +1,0 @@
-settings {}
-
-vars {
-    a: string,
-    b: int,
-    c: bool,
-    d: Array<int>
-}
