@@ -1,7 +1,9 @@
+use crate::envl::envl;
+
 pub mod envl;
 
 pub fn main() {
-    let env = envl::envl();
+    let env = envl();
 
     println!("{}", env.a);
     println!("{}", env.b);
