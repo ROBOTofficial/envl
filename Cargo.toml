@@ -13,7 +13,7 @@ members = [
 repository = "https://github.com/ROBOTofficial/envl"
 license = "MIT"
 edition = "2021"
-rust-version = "1.75"
+rust-version = "1.91.0"
 
 [patch.crates-io]
 envl = { path = "packages/envl-rs" }
