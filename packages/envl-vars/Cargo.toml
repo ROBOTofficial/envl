@@ -8,7 +8,6 @@ edition.workspace = true
 rust-version.workspace = true
 
 [lib]
-crate-type = ["rlib", "cdylib", "staticlib"]
 
 [dependencies]
-envl-utils = { version = "0.2.0", path = "../envl-utils" }
+envl-utils = { version = "0.2.0" }
