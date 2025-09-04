@@ -5,61 +5,55 @@ use envl_vars::misc::variable::VariableValue;
 
 use crate::misc::error::{convert_envl_lib_error, EnvlError, EnvlLibError};
 
-pub fn parse_var(t: Type, v: VariableValue) -> Result<Value, EnvlError> {
+pub fn parse_var(t: Type, v: VariableValue) -> Result<Value, Box<EnvlError>> {
     match &t {
         Type::Null => {
             return Ok(Value::Null);
         }
-        Type::String => match &v {
-            VariableValue::String(value) => {
+        Type::String => {
+            if let VariableValue::String(value) = &v {
                 return Ok(Value::String(value.clone()));
             }
-            _ => {}
-        },
-        Type::Char => match &v {
-            VariableValue::Char(c) => {
-                return Ok(Value::Char(c.clone()));
+        }
+        Type::Char => {
+            if let VariableValue::Char(c) = &v {
+                return Ok(Value::Char(*c));
             }
-            _ => {}
-        },
-        Type::Float => match &v {
-            VariableValue::Number(n) => {
+        }
+        Type::Float => {
+            if let VariableValue::Number(n) = &v {
                 if let Ok(f) = n.parse::<f64>() {
                     return Ok(Value::Float(f));
                 }
             }
-            _ => {}
-        },
-        Type::Int => match &v {
-            VariableValue::Number(n) => {
+        }
+        Type::Int => {
+            if let VariableValue::Number(n) = &v {
                 if let Ok(i) = n.parse::<i64>() {
                     return Ok(Value::Int(i));
                 }
             }
-            _ => {}
-        },
-        Type::Uint => match &v {
-            VariableValue::Number(n) => {
+        }
+        Type::Uint => {
+            if let VariableValue::Number(n) = &v {
                 if let Ok(u) = n.parse::<u64>() {
                     return Ok(Value::Uint(u));
                 }
             }
-            _ => {}
-        },
-        Type::Bool => match &v {
-            VariableValue::Bool(b) => {
+        }
+        Type::Bool => {
+            if let VariableValue::Bool(b) = &v {
                 return Ok(Value::Bool(b.to_owned()));
             }
-            _ => {}
-        },
+        }
         Type::Option(t) => {
             return match parse_var(*t.to_owned(), v) {
                 Ok(value) => Ok(value),
                 Err(err) => Err(err),
             };
         }
-        Type::Array(boxed_type) => match &v {
-            VariableValue::Array(elements) => {
+        Type::Array(boxed_type) => {
+            if let VariableValue::Array(elements) = &v {
                 let element_type = *boxed_type.clone();
                 let mut results = Vec::new();
 
@@ -76,10 +70,9 @@ pub fn parse_var(t: Type, v: VariableValue) -> Result<Value, EnvlError> {
 
                 return Ok(Value::Array(results));
             }
-            _ => {}
-        },
-        Type::Struct(elements) => match &v {
-            VariableValue::Struct(vars) => {
+        }
+        Type::Struct(elements) => {
+            if let VariableValue::Struct(vars) = &v {
                 let mut hm = HashMap::new();
 
                 for (name, value) in vars {
@@ -94,19 +87,18 @@ pub fn parse_var(t: Type, v: VariableValue) -> Result<Value, EnvlError> {
                         }
                     } else {
                         dbg!(t.to_owned(), v.to_owned());
-                        return Err(convert_envl_lib_error(EnvlLibError {
+                        return Err(Box::from(convert_envl_lib_error(EnvlLibError {
                             message: "Invalid type".to_string(),
-                        }));
+                        })));
                     }
                 }
 
                 return Ok(Value::Struct(hm));
             }
-            _ => {}
-        },
+        }
     }
 
-    Err(convert_envl_lib_error(EnvlLibError {
+    Err(Box::from(convert_envl_lib_error(EnvlLibError {
         message: "Invalid type".to_string(),
-    }))
+    })))
 }

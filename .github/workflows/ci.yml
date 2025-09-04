@@ -2,7 +2,6 @@ name: CI
 
 on:
   pull_request:
-  push:
 
 jobs:
   rust:
@@ -22,6 +21,9 @@ jobs:
             ~/.cargo/git/db/
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Install tools
+        run: rustup component add clippy rustfmt
 
       - name: Check build
         run: cargo build --release --verbose

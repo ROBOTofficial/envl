@@ -1,7 +1,4 @@
-use std::{
-    collections::HashMap,
-    io::{Error, ErrorKind},
-};
+use std::{collections::HashMap, io::Error};
 
 use envl_config::misc::variable::{Type, Value};
 use proc_macro2::TokenStream;
@@ -41,7 +38,7 @@ pub fn gen_struct(
                 }
             }
         } else {
-            return Err(Error::new(ErrorKind::Other, ""));
+            return Err(Error::other(""));
         }
     }
 

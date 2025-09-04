@@ -18,7 +18,7 @@ mod test {
         let env = envl();
         assert_eq!(env.a, "123".to_string());
         assert_eq!(env.b, 123);
-        assert_eq!(env.c, true);
+        assert!(env.c);
         assert_eq!(env.d, vec![123, 456]);
     }
 }

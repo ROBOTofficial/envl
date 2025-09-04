@@ -125,6 +125,8 @@ pub fn generate_rust_file(data: VariableHashMap) -> Result<String, Error> {
         .collect::<Vec<_>>();
 
     Ok(quote! {
+        #[deny(clippy::all)]
+
         #(#structs)*
 
         #[derive(Debug, Clone)]

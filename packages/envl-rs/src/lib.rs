@@ -41,7 +41,7 @@ pub struct VarData {
 
 pub type VariableHashMap = HashMap<String, VarData>;
 
-pub fn load_envl(output: String) -> Result<(), EnvlError> {
+pub fn load_envl(output: String) -> Result<(), Box<EnvlError>> {
     match current_dir() {
         Ok(current_dir_path) => {
             let config_file_path = current_dir_path.join(".envlconf").display().to_string();
@@ -55,12 +55,12 @@ pub fn load_envl(output: String) -> Result<(), EnvlError> {
                         Ok(hm) => match generate_file(hm, output.to_owned()) {
                             Ok(result) => {
                                 if let Err(err) = write_file(output, result) {
-                                    Err(convert_io_error(err))
+                                    Err(Box::from(convert_io_error(err)))
                                 } else {
                                     Ok(())
                                 }
                             }
-                            Err(err) => Err(convert_io_error(err)),
+                            Err(err) => Err(Box::from(convert_io_error(err))),
                         },
                         Err(err) => Err(err),
                     }
@@ -68,7 +68,7 @@ pub fn load_envl(output: String) -> Result<(), EnvlError> {
                 Err(err) => Err(err),
             }
         }
-        Err(err) => Err(convert_io_error(err)),
+        Err(err) => Err(Box::from(convert_io_error(err))),
     }
 }
 
@@ -76,7 +76,7 @@ pub fn load_envl_core(
     current_dir: PathBuf,
     config_file_path: String,
     code: String,
-) -> Result<VariableHashMap, EnvlError> {
+) -> Result<VariableHashMap, Box<EnvlError>> {
     match load_files(current_dir, config_file_path, code) {
         Ok((vars, config)) => {
             let vars_hm = vars_to_hashmap(vars);
@@ -118,7 +118,7 @@ pub fn load_envl_core(
             }
 
             if let Err(err) = check_envl_vars(result.to_owned()) {
-                Err(convert_envl_lib_error(err))
+                Err(Box::from(convert_envl_lib_error(err)))
             } else {
                 Ok(result)
             }
@@ -159,7 +159,7 @@ pub fn load_files(
     current_dir: PathBuf,
     config_file_path: String,
     code: String,
-) -> Result<(Vec<Variable>, Config), EnvlError> {
+) -> Result<(Vec<Variable>, Config), Box<EnvlError>> {
     match gen_config_ast(config_file_path.clone(), code.clone()) {
         Ok(config) => {
             let file_path = if let Some(ref file_path) = config.settings.envl_file_path {
@@ -170,11 +170,11 @@ pub fn load_files(
             match read_file(file_path.to_owned()) {
                 Ok(code) => match gen_vars_ast(file_path, code) {
                     Ok(vars) => Ok((vars, config)),
-                    Err(err) => Err(convert_envl_vars_error(err)),
+                    Err(err) => Err(Box::from(convert_envl_vars_error(err))),
                 },
                 Err(err) => Err(err),
             }
         }
-        Err(err) => Err(convert_envl_config_error(err)),
+        Err(err) => Err(Box::from(convert_envl_config_error(err))),
     }
 }
