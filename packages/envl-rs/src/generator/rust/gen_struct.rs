@@ -1,7 +1,4 @@
-use std::{
-    collections::HashMap,
-    io::Error,
-};
+use std::{collections::HashMap, io::Error};
 
 use envl_config::misc::variable::{Type, Value};
 use proc_macro2::TokenStream;
