@@ -23,7 +23,7 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Install tools
-        run: rustup component add clippy
+        run: rustup component add clippy rustfmt
 
       - name: Check build
         run: cargo build --release --verbose
