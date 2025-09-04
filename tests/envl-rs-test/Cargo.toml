@@ -8,10 +8,10 @@ rust-version.workspace = true
 build = "build.rs"
 
 [dependencies]
-envl = { version = "0.4.0", path = "../../packages/envl-rs" }
+envl = { version = "0.5.0", path = "../../packages/envl-rs" }
 
 [build-dependencies]
-envl = { version = "0.4.0", path = "../../packages/envl-rs" }
+envl = { version = "0.5.0", path = "../../packages/envl-rs" }
 
 [lints]
 workspace = true
