@@ -7,7 +7,7 @@ use std::{
 use crate::misc::error::{convert_io_error, EnvlError};
 
 pub fn read_file(file_path: String) -> Result<String, EnvlError> {
-    match File::open(file_path.to_owned()) {
+    match File::open(&file_path) {
         Ok(mut f) => {
             let mut buf = String::new();
             let _ = f.read_to_string(&mut buf);
@@ -26,7 +26,7 @@ pub fn write_file(file_path: String, txt: String) -> Result<usize, Error> {
     match f {
         Ok(mut f) => {
             let _ = f.write("".as_bytes());
-            f.write(&format!("{}\n", txt).as_bytes())
+            f.write(format!("{}\n", txt).as_bytes())
         }
         Err(err) => Err(err),
     }

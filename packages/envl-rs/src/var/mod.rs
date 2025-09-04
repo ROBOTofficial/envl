@@ -10,47 +10,29 @@ pub fn parse_var(t: Type, v: VariableValue) -> Result<Value, EnvlError> {
         Type::Null => {
             return Ok(Value::Null);
         }
-        Type::String => match &v {
-            VariableValue::String(value) => {
-                return Ok(Value::String(value.clone()));
-            }
-            _ => {}
+        Type::String => if let VariableValue::String(value) = &v {
+            return Ok(Value::String(value.clone()));
         },
-        Type::Char => match &v {
-            VariableValue::Char(c) => {
-                return Ok(Value::Char(c.clone()));
-            }
-            _ => {}
+        Type::Char => if let VariableValue::Char(c) = &v {
+            return Ok(Value::Char(*c));
         },
-        Type::Float => match &v {
-            VariableValue::Number(n) => {
-                if let Ok(f) = n.parse::<f64>() {
-                    return Ok(Value::Float(f));
-                }
+        Type::Float => if let VariableValue::Number(n) = &v {
+            if let Ok(f) = n.parse::<f64>() {
+                return Ok(Value::Float(f));
             }
-            _ => {}
         },
-        Type::Int => match &v {
-            VariableValue::Number(n) => {
-                if let Ok(i) = n.parse::<i64>() {
-                    return Ok(Value::Int(i));
-                }
+        Type::Int => if let VariableValue::Number(n) = &v {
+            if let Ok(i) = n.parse::<i64>() {
+                return Ok(Value::Int(i));
             }
-            _ => {}
         },
-        Type::Uint => match &v {
-            VariableValue::Number(n) => {
-                if let Ok(u) = n.parse::<u64>() {
-                    return Ok(Value::Uint(u));
-                }
+        Type::Uint => if let VariableValue::Number(n) = &v {
+            if let Ok(u) = n.parse::<u64>() {
+                return Ok(Value::Uint(u));
             }
-            _ => {}
         },
-        Type::Bool => match &v {
-            VariableValue::Bool(b) => {
-                return Ok(Value::Bool(b.to_owned()));
-            }
-            _ => {}
+        Type::Bool => if let VariableValue::Bool(b) = &v {
+            return Ok(Value::Bool(b.to_owned()));
         },
         Type::Option(t) => {
             return match parse_var(*t.to_owned(), v) {
@@ -58,51 +40,45 @@ pub fn parse_var(t: Type, v: VariableValue) -> Result<Value, EnvlError> {
                 Err(err) => Err(err),
             };
         }
-        Type::Array(boxed_type) => match &v {
-            VariableValue::Array(elements) => {
-                let element_type = *boxed_type.clone();
-                let mut results = Vec::new();
+        Type::Array(boxed_type) => if let VariableValue::Array(elements) = &v {
+            let element_type = *boxed_type.clone();
+            let mut results = Vec::new();
 
-                for element in elements {
-                    match parse_var(element_type.clone(), element.clone()) {
-                        Ok(e) => {
-                            results.push(e);
+            for element in elements {
+                match parse_var(element_type.clone(), element.clone()) {
+                    Ok(e) => {
+                        results.push(e);
+                    }
+                    Err(err) => {
+                        return Err(err);
+                    }
+                }
+            }
+
+            return Ok(Value::Array(results));
+        },
+        Type::Struct(elements) => if let VariableValue::Struct(vars) = &v {
+            let mut hm = HashMap::new();
+
+            for (name, value) in vars {
+                if let Some(t) = elements.get(name) {
+                    match parse_var(t.clone(), value.clone()) {
+                        Ok(r) => {
+                            hm.insert(name.clone(), r);
                         }
                         Err(err) => {
                             return Err(err);
                         }
                     }
+                } else {
+                    dbg!(t.to_owned(), v.to_owned());
+                    return Err(convert_envl_lib_error(EnvlLibError {
+                        message: "Invalid type".to_string(),
+                    }));
                 }
-
-                return Ok(Value::Array(results));
             }
-            _ => {}
-        },
-        Type::Struct(elements) => match &v {
-            VariableValue::Struct(vars) => {
-                let mut hm = HashMap::new();
 
-                for (name, value) in vars {
-                    if let Some(t) = elements.get(name) {
-                        match parse_var(t.clone(), value.clone()) {
-                            Ok(r) => {
-                                hm.insert(name.clone(), r);
-                            }
-                            Err(err) => {
-                                return Err(err);
-                            }
-                        }
-                    } else {
-                        dbg!(t.to_owned(), v.to_owned());
-                        return Err(convert_envl_lib_error(EnvlLibError {
-                            message: "Invalid type".to_string(),
-                        }));
-                    }
-                }
-
-                return Ok(Value::Struct(hm));
-            }
-            _ => {}
+            return Ok(Value::Struct(hm));
         },
     }
 

@@ -1,4 +1,4 @@
-use std::io::{Error, ErrorKind};
+use std::io::Error;
 
 use envl_config::misc::variable::{Type, Value};
 use proc_macro2::{Literal, TokenStream};
@@ -27,7 +27,7 @@ pub fn gen_value(
                     Err(err) => Err(err),
                 }
             }
-            _ => Err(Error::new(ErrorKind::Other, "Invalid Type")),
+            _ => Err(Error::other("Invalid Type")),
         },
         Value::Struct(value) => match &t {
             Type::Struct(struct_type) => {
@@ -36,7 +36,7 @@ pub fn gen_value(
                     Err(err) => Err(err),
                 }
             }
-            _ => Err(Error::new(ErrorKind::Other, "Invalid Type")),
+            _ => Err(Error::other("Invalid Type")),
         },
     };
 

@@ -1,6 +1,6 @@
 use std::{
     collections::HashMap,
-    io::{Error, ErrorKind},
+    io::Error,
 };
 
 use envl_config::misc::variable::{Type, Value};
@@ -41,7 +41,7 @@ pub fn gen_struct(
                 }
             }
         } else {
-            return Err(Error::new(ErrorKind::Other, ""));
+            return Err(Error::other(""));
         }
     }
 
