@@ -2,6 +2,7 @@
 resolver = "3"
 members = [
     "packages/envl-rs",
+    "packages/envl-cli",
     "packages/envl-config",
     "packages/envl-vars",
     "packages/envl-utils",

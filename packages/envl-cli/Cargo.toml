@@ -1,0 +1,19 @@
+[package]
+name = "envl-cli"
+version = "0.1.0"
+description = "envl's cli"
+repository.workspace = true
+license.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[[bin]]
+name = "envl"
+path = "src/cli.rs"
+
+[dependencies]
+clap = { version = "4.5.46", features = ["derive"] }
+envl = { version = "0.5.0", path = "../envl-rs" }
+
+[lints]
+workspace = true
