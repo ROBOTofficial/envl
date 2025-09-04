@@ -5,7 +5,7 @@ use envl_vars::misc::variable::VariableValue;
 
 use crate::misc::error::{convert_envl_lib_error, EnvlError, EnvlLibError};
 
-pub fn parse_var(t: Type, v: VariableValue) -> Result<Value, EnvlError> {
+pub fn parse_var(t: Type, v: VariableValue) -> Result<Value, Box<EnvlError>> {
     match &t {
         Type::Null => {
             return Ok(Value::Null);
@@ -87,9 +87,9 @@ pub fn parse_var(t: Type, v: VariableValue) -> Result<Value, EnvlError> {
                         }
                     } else {
                         dbg!(t.to_owned(), v.to_owned());
-                        return Err(convert_envl_lib_error(EnvlLibError {
+                        return Err(Box::from(convert_envl_lib_error(EnvlLibError {
                             message: "Invalid type".to_string(),
-                        }));
+                        })));
                     }
                 }
 
@@ -98,7 +98,7 @@ pub fn parse_var(t: Type, v: VariableValue) -> Result<Value, EnvlError> {
         }
     }
 
-    Err(convert_envl_lib_error(EnvlLibError {
+    Err(Box::from(convert_envl_lib_error(EnvlLibError {
         message: "Invalid type".to_string(),
-    }))
+    })))
 }

@@ -6,14 +6,14 @@ use std::{
 
 use crate::misc::error::{convert_io_error, EnvlError};
 
-pub fn read_file(file_path: String) -> Result<String, EnvlError> {
+pub fn read_file(file_path: String) -> Result<String, Box<EnvlError>> {
     match File::open(&file_path) {
         Ok(mut f) => {
             let mut buf = String::new();
             let _ = f.read_to_string(&mut buf);
             Ok(buf)
         }
-        Err(err) => Err(convert_io_error(err)),
+        Err(err) => Err(Box::from(convert_io_error(err))),
     }
 }
 
