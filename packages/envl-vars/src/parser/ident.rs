@@ -1,6 +1,9 @@
 use envl_utils::types::Position;
 
-use crate::parser::{error::DIFFERENT_ORDER, ParsedIdent, Parser, ParserError, Var};
+use crate::{
+    misc::error::{EnvlVarsError, ErrorContext},
+    parser::{ParsedIdent, Parser, Var},
+};
 
 impl Parser {
     pub fn parse_ident(
@@ -9,12 +12,10 @@ impl Parser {
         var: &Var,
         position: &Position,
         equal_used: &bool,
-    ) -> Result<ParsedIdent, ParserError> {
+    ) -> Result<ParsedIdent, EnvlVarsError> {
         if var.name.is_some() && var.value.is_some() {
-            return Err(ParserError {
-                kind: DIFFERENT_ORDER.kind,
-                code: DIFFERENT_ORDER.code,
-                message: DIFFERENT_ORDER.message.to_string(),
+            return Err(EnvlVarsError {
+                message: ErrorContext::InvalidSyntax,
                 position: position.clone(),
             });
         }
@@ -27,10 +28,8 @@ impl Parser {
                 Err(err) => Err(err),
             }
         } else {
-            Err(ParserError {
-                kind: DIFFERENT_ORDER.kind,
-                code: DIFFERENT_ORDER.code,
-                message: DIFFERENT_ORDER.message.to_string(),
+            Err(EnvlVarsError {
+                message: ErrorContext::InvalidSyntax,
                 position: position.clone(),
             })
         }

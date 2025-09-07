@@ -2,24 +2,18 @@ use std::{collections::HashMap, slice::Iter};
 
 use crate::{
     misc::{
+        error::{EnvlVarsError, ErrorContext},
         token::{Token, Value},
         variable::VariableValue,
     },
-    parser::{
-        error::{
-            duplicate_error, COLON_POSITION, COLON_REQUIRED, COMMA_POSITION, COMMA_REQUIRED,
-            INVALID_ARRAY_POSITION, INVALID_SYNTAX, ITEM_NAME_NOT_SET, STRUCT_CLOSED,
-            SYNTAX_IN_STRUCT,
-        },
-        Parser, ParserError,
-    },
+    parser::Parser,
 };
 
 impl Parser {
     pub fn parse_struct<'a>(
         &self,
         tokens: &mut Iter<'a, Token>,
-    ) -> Result<VariableValue, ParserError> {
+    ) -> Result<VariableValue, EnvlVarsError> {
         let mut in_block = false;
         let mut hm = HashMap::new();
         let mut parser_error = None;
@@ -27,7 +21,7 @@ impl Parser {
         let mut colon_used = false;
         let mut struct_closed = false;
         let mut last_position = None;
-        let mut element_name = None;
+        let mut element_name: Option<String> = None;
 
         macro_rules! clean {
             () => {
@@ -42,11 +36,8 @@ impl Parser {
                 macro_rules! insert {
                     ($name: expr, $value: expr) => {
                         if hm.get(&$name).is_some() {
-                            let err = duplicate_error(&$name);
-                            parser_error = Some(ParserError {
-                                kind: err.kind,
-                                code: err.code,
-                                message: err.message.to_string(),
+                            parser_error = Some(EnvlVarsError {
+                                message: ErrorContext::Duplicate($name.to_string()),
                                 position: token.position.clone(),
                             });
                             break 'parse_struct_loop;
@@ -70,10 +61,8 @@ impl Parser {
                 }
 
                 if !in_block {
-                    parser_error = Some(ParserError {
-                        kind: INVALID_SYNTAX.kind,
-                        code: INVALID_SYNTAX.code,
-                        message: INVALID_SYNTAX.message.to_string(),
+                    parser_error = Some(EnvlVarsError {
+                        message: ErrorContext::InvalidSyntax,
                         position: token.position.clone(),
                     });
                     break 'parse_struct_loop;
@@ -84,19 +73,15 @@ impl Parser {
                         Ok(value) => match element_name {
                             Some(name) => {
                                 if !colon_used {
-                                    parser_error = Some(ParserError {
-                                        kind: COLON_REQUIRED.kind,
-                                        code: COLON_REQUIRED.code,
-                                        message: COLON_REQUIRED.message.to_string(),
+                                    parser_error = Some(EnvlVarsError {
+                                        message: ErrorContext::InvalidPosition("Colon".to_string()),
                                         position: token.position.clone(),
                                     });
                                     break 'parse_struct_loop;
                                 }
                                 if !hm.is_empty() && !comma_used {
-                                    parser_error = Some(ParserError {
-                                        kind: COMMA_REQUIRED.kind,
-                                        code: COMMA_REQUIRED.code,
-                                        message: COMMA_REQUIRED.message.to_string(),
+                                    parser_error = Some(EnvlVarsError {
+                                        message: ErrorContext::InvalidPosition("Comma".to_string()),
                                         position: token.position.clone(),
                                     });
                                     break 'parse_struct_loop;
@@ -105,10 +90,8 @@ impl Parser {
                                 clean!();
                             }
                             None => {
-                                parser_error = Some(ParserError {
-                                    kind: ITEM_NAME_NOT_SET.kind,
-                                    code: ITEM_NAME_NOT_SET.code,
-                                    message: ITEM_NAME_NOT_SET.message.to_string(),
+                                parser_error = Some(EnvlVarsError {
+                                    message: ErrorContext::ItemNotSet,
                                     position: token.position.clone(),
                                 });
                                 break 'parse_struct_loop;
@@ -123,19 +106,15 @@ impl Parser {
                         Ok(value) => {
                             if let Some(name) = element_name {
                                 if !colon_used {
-                                    parser_error = Some(ParserError {
-                                        kind: COLON_REQUIRED.kind,
-                                        code: COLON_REQUIRED.code,
-                                        message: COLON_REQUIRED.message.to_string(),
+                                    parser_error = Some(EnvlVarsError {
+                                        message: ErrorContext::Required("Colon".to_string()),
                                         position: token.position.clone(),
                                     });
                                     break 'parse_struct_loop;
                                 }
                                 if !hm.is_empty() && !comma_used {
-                                    parser_error = Some(ParserError {
-                                        kind: COMMA_REQUIRED.kind,
-                                        code: COMMA_REQUIRED.code,
-                                        message: COMMA_REQUIRED.message.to_string(),
+                                    parser_error = Some(EnvlVarsError {
+                                        message: ErrorContext::Required("Comma".to_string()),
                                         position: token.position.clone(),
                                     });
                                     break 'parse_struct_loop;
@@ -143,10 +122,8 @@ impl Parser {
                                 insert!(name, value);
                                 clean!();
                             } else {
-                                parser_error = Some(ParserError {
-                                    kind: INVALID_ARRAY_POSITION.kind,
-                                    code: INVALID_ARRAY_POSITION.code,
-                                    message: INVALID_ARRAY_POSITION.message.to_string(),
+                                parser_error = Some(EnvlVarsError {
+                                    message: ErrorContext::AfterEqual("array".to_string()),
                                     position: token.position.clone(),
                                 });
                                 break 'parse_struct_loop;
@@ -159,10 +136,8 @@ impl Parser {
                     },
                     Value::Comma => {
                         if comma_used {
-                            parser_error = Some(ParserError {
-                                kind: COMMA_POSITION.kind,
-                                code: COMMA_POSITION.code,
-                                message: COMMA_POSITION.message.to_string(),
+                            parser_error = Some(EnvlVarsError {
+                                message: ErrorContext::InvalidPosition("Comma".to_string()),
                                 position: token.position.clone(),
                             });
                             break 'parse_struct_loop;
@@ -171,10 +146,8 @@ impl Parser {
                     }
                     Value::Colon => {
                         if colon_used {
-                            parser_error = Some(ParserError {
-                                kind: COLON_POSITION.kind,
-                                code: COLON_POSITION.code,
-                                message: COLON_POSITION.message.to_string(),
+                            parser_error = Some(EnvlVarsError {
+                                message: ErrorContext::InvalidPosition("Colon".to_string()),
                                 position: token.position.clone(),
                             });
                             break 'parse_struct_loop;
@@ -187,10 +160,8 @@ impl Parser {
                         }
                         Some(name) if colon_used => {
                             if !hm.is_empty() && !comma_used {
-                                parser_error = Some(ParserError {
-                                    kind: COMMA_REQUIRED.kind,
-                                    code: COMMA_REQUIRED.code,
-                                    message: COMMA_REQUIRED.message.to_string(),
+                                parser_error = Some(EnvlVarsError {
+                                    message: ErrorContext::Required("Comma".to_string()),
                                     position: token.position.clone(),
                                 });
                                 break 'parse_struct_loop;
@@ -207,22 +178,12 @@ impl Parser {
                             }
                         }
                         _ => {
-                            let (code, kind, message) = if !colon_used {
-                                (
-                                    COLON_REQUIRED.code,
-                                    COLON_REQUIRED.kind,
-                                    COLON_REQUIRED.message.to_string(),
-                                )
+                            let message = if !colon_used {
+                                ErrorContext::Required("colon".to_string())
                             } else {
-                                (
-                                    ITEM_NAME_NOT_SET.code,
-                                    ITEM_NAME_NOT_SET.kind,
-                                    ITEM_NAME_NOT_SET.message.to_string(),
-                                )
+                                ErrorContext::ItemNotSet
                             };
-                            parser_error = Some(ParserError {
-                                code,
-                                kind,
+                            parser_error = Some(EnvlVarsError {
                                 message,
                                 position: token.position.clone(),
                             });
@@ -230,10 +191,8 @@ impl Parser {
                         }
                     },
                     _ => {
-                        parser_error = Some(ParserError {
-                            kind: SYNTAX_IN_STRUCT.kind,
-                            code: SYNTAX_IN_STRUCT.code,
-                            message: SYNTAX_IN_STRUCT.message.to_string(),
+                        parser_error = Some(EnvlVarsError {
+                            message: ErrorContext::AfterEqual("struct".to_string()),
                             position: token.position.clone(),
                         });
                         break 'parse_struct_loop;
@@ -249,10 +208,8 @@ impl Parser {
         } else {
             if let Some(position) = last_position {
                 if !struct_closed {
-                    return Err(ParserError {
-                        kind: STRUCT_CLOSED.kind,
-                        code: STRUCT_CLOSED.code,
-                        message: STRUCT_CLOSED.message.to_string(),
+                    return Err(EnvlVarsError {
+                        message: ErrorContext::AfterEqual("struct".to_string()),
                         position,
                     });
                 }

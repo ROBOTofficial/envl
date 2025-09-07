@@ -4,11 +4,14 @@ mod parser_test {
 
     use crate::{
         lexer::Lexer,
-        misc::variable::{Variable, VariableValue, VariableWithoutPosition},
-        parser::{error::ErrorKind, Parser, ParserError},
+        misc::{
+            error::ErrorContext,
+            variable::{Variable, VariableValue, VariableWithoutPosition},
+        },
+        parser::{EnvlVarsError, Parser},
     };
 
-    fn gen_parsed_vars(code: String) -> Result<Vec<Variable>, ParserError> {
+    fn gen_parsed_vars(code: String) -> Result<Vec<Variable>, EnvlVarsError> {
         let lex = Lexer::new("test.envl".to_string(), code);
         let tokens = lex.generate();
         let parser = Parser::new(tokens);
@@ -216,7 +219,7 @@ mod parser_test {
         let result = gen_parsed_vars("variable = \"aiueo';".to_string());
         assert!(result.is_err());
         if let Err(err) = result {
-            assert_eq!(err.kind, ErrorKind::InvalidType);
+            assert_eq!(err.message, ErrorContext::InvalidType);
         }
     }
 
@@ -225,7 +228,7 @@ mod parser_test {
         let result = gen_parsed_vars("variable = 12345; variable = \"12345\";".to_string());
         assert!(result.is_err());
         if let Err(err) = result {
-            assert_eq!(err.kind, ErrorKind::DuplicateVars);
+            assert_eq!(err.message, ErrorContext::Duplicate("variable".to_string()));
         }
     }
 
@@ -234,7 +237,7 @@ mod parser_test {
         let result = gen_parsed_vars("variable = aiueo;".to_string());
         assert!(result.is_err());
         if let Err(err) = result {
-            assert_eq!(err.kind, ErrorKind::InvalidType);
+            assert_eq!(err.message, ErrorContext::InvalidType);
         }
     }
 
@@ -243,7 +246,7 @@ mod parser_test {
         let result = gen_parsed_vars("variable = 'char';".to_string());
         assert!(result.is_err());
         if let Err(err) = result {
-            assert_eq!(err.kind, ErrorKind::MultipleCharacters);
+            assert_eq!(err.message, ErrorContext::MultipleChar);
         }
     }
 }
