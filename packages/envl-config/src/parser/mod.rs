@@ -1,16 +1,13 @@
-use envl_utils::types::Position;
-
-use crate::{
-    misc::{
-        config::Config,
-        token::{Token, Value},
-    },
-    parser::error::{
-        template_to_error, ParserError, INVALID_SYNTAX_OUTSIDE, SETTINGS_AND_VARS_REQUIRED,
-    },
+use envl_utils::{
+    error::{EnvlError, ErrorContext},
+    types::Position,
 };
 
-pub mod error;
+use crate::misc::{
+    config::Config,
+    token::{Token, Value},
+};
+
 pub mod settings;
 pub mod value;
 pub mod var;
@@ -26,7 +23,7 @@ impl Parser {
         Self { file_path, tokens }
     }
 
-    pub fn parse(&self) -> Result<Config, ParserError> {
+    pub fn parse(&self) -> Result<Config, EnvlError> {
         let mut based_token = vec![];
 
         for token in self.tokens.iter() {
@@ -72,10 +69,10 @@ impl Parser {
                         }
                     },
                     _ => {
-                        error!(template_to_error(
-                            INVALID_SYNTAX_OUTSIDE,
-                            token.position.clone()
-                        ));
+                        error!(EnvlError {
+                            message: ErrorContext::InvalidSettingsSyntax,
+                            position: token.position.clone()
+                        });
                     }
                 }
             } else {
@@ -89,14 +86,14 @@ impl Parser {
 
         match (vars, settings) {
             (Some(vars), Some(settings)) => Ok(Config { settings, vars }),
-            _ => Err(template_to_error(
-                SETTINGS_AND_VARS_REQUIRED,
-                Position {
+            _ => Err(EnvlError {
+                message: ErrorContext::Required("Settings and vars".to_string()),
+                position: Position {
                     file_path: self.file_path.clone(),
                     row: 0,
                     col: 0,
                 },
-            )),
+            }),
         }
     }
 }

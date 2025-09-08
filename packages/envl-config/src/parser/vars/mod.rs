@@ -1,21 +1,14 @@
 use std::{collections::HashMap, slice::Iter};
 
+use envl_utils::error::{EnvlError, ErrorContext};
+
 use crate::{
     misc::{
         config::{Var, Vars},
         token::{Token, Value},
         variable::{Type, Value as VarValue},
     },
-    parser::{
-        error::{
-            duplicate_error, template_to_error, ParserError, COLON_POSITION, COLON_REQUIRED,
-            COMMA_POSITION, COMMA_REQUIRED, ELEMENT_NAME_REQUIRED, INVALID_ELEMENTS,
-            INVALID_LEFT_CURLY_POSITION, INVALID_SYNTAX, INVALID_SYNTAX_IN_VARS,
-            MUST_IN_VARS_BLOCK, VARS_CLOSED,
-        },
-        vars::option_value::parse_parsed_value,
-        Parser,
-    },
+    parser::{vars::option_value::parse_parsed_value, Parser},
 };
 
 pub mod array;
@@ -24,7 +17,7 @@ pub mod option_value;
 pub mod parse_struct;
 
 impl Parser {
-    pub fn parse_vars<'a>(&self, tokens: &mut Iter<'a, Token>) -> Result<Vars, ParserError> {
+    pub fn parse_vars<'a>(&self, tokens: &mut Iter<'a, Token>) -> Result<Vars, EnvlError> {
         let mut in_block = false;
         let mut block_closed = false;
         let mut colon_used = false;
@@ -33,28 +26,30 @@ impl Parser {
         let mut inserted_element_name = None;
         let mut last_position = None;
 
-        let mut parser_error = None;
+        let mut parser_error: Option<EnvlError> = None;
         let mut vars = HashMap::new();
 
         'parse_loop: loop {
             if let Some(token) = tokens.next() {
                 macro_rules! error {
-                    ($err: expr) => {
-                        parser_error = Some(template_to_error($err, token.position.clone()));
+                    ($msg: expr) => {
+                        parser_error = Some(EnvlError {
+                            message: $msg,
+                            position: token.position.clone(),
+                        });
                         break 'parse_loop;
                     };
                 }
                 macro_rules! insert {
                     ($name: expr, $value: expr) => {
                         if !vars.is_empty() && !comma_used {
-                            error!(COMMA_REQUIRED);
+                            error!(ErrorContext::Required("Comma".to_string()));
                         }
                         if !colon_used {
-                            error!(COLON_REQUIRED);
+                            error!(ErrorContext::Required("Colon".to_string()));
                         }
                         if vars.get(&$name).is_some() {
-                            let err = duplicate_error(&$name);
-                            error!(err);
+                            error!(ErrorContext::Duplicate($name.to_string()));
                         }
                         vars.insert($name.clone(), $value);
                         element_name = None;
@@ -69,7 +64,7 @@ impl Parser {
                 match &token.value {
                     Value::LeftCurlyBracket => {
                         if in_block {
-                            error!(INVALID_LEFT_CURLY_POSITION);
+                            error!(ErrorContext::InvalidPosition("{".to_string()));
                         }
                         in_block = true;
                         continue;
@@ -82,25 +77,25 @@ impl Parser {
                 }
 
                 if !in_block {
-                    error!(MUST_IN_VARS_BLOCK);
+                    error!(ErrorContext::MustInBlock("vars".to_string()));
                 }
 
                 match &token.value {
                     Value::Comma => {
                         if comma_used {
-                            error!(COMMA_POSITION);
+                            error!(ErrorContext::InvalidPosition("Comma".to_string()));
                         }
                         comma_used = true;
                     }
                     Value::Colon => {
                         if colon_used {
-                            error!(COLON_POSITION);
+                            error!(ErrorContext::InvalidPosition("Colon".to_string()));
                         }
                         colon_used = true;
                     }
                     Value::Ident(v) => {
                         if element_name.is_some() {
-                            error!(INVALID_ELEMENTS);
+                            error!(ErrorContext::InvalidElements);
                         }
                         element_name = Some(v.clone());
                     }
@@ -116,7 +111,7 @@ impl Parser {
                                 }
                             );
                         } else {
-                            error!(ELEMENT_NAME_REQUIRED);
+                            error!(ErrorContext::Required("Element name".to_string()));
                         }
                     }
                     Value::Option => match self.parse_option(tokens) {
@@ -132,7 +127,7 @@ impl Parser {
                                     }
                                 );
                             } else {
-                                error!(ELEMENT_NAME_REQUIRED);
+                                error!(ErrorContext::Required("Element name".to_string()));
                             }
                         }
                         Err(err) => {
@@ -153,7 +148,7 @@ impl Parser {
                                     }
                                 );
                             } else {
-                                error!(ELEMENT_NAME_REQUIRED);
+                                error!(ErrorContext::Required("Element name".to_string()));
                             }
                         }
                         Err(err) => {
@@ -174,7 +169,7 @@ impl Parser {
                                     }
                                 );
                             } else {
-                                error!(ELEMENT_NAME_REQUIRED);
+                                error!(ErrorContext::Required("Element name".to_string()));
                             }
                         }
                         Err(err) => {
@@ -194,7 +189,7 @@ impl Parser {
                                 }
                             );
                         } else {
-                            error!(ELEMENT_NAME_REQUIRED);
+                            error!(ErrorContext::Required("Element name".to_string()));
                         }
                     }
                     Value::LeftParentheses => match self.parse_option_value(tokens) {
@@ -235,10 +230,10 @@ impl Parser {
                                         }
                                     }
                                 } else {
-                                    error!(INVALID_SYNTAX);
+                                    error!(ErrorContext::InvalidSyntaxInBlock("vars".to_string()));
                                 }
                             } else {
-                                error!(ELEMENT_NAME_REQUIRED);
+                                error!(ErrorContext::Required("Element name".to_string()));
                             }
                         }
                         Err(err) => {
@@ -247,7 +242,7 @@ impl Parser {
                         }
                     },
                     _ => {
-                        error!(INVALID_SYNTAX_IN_VARS);
+                        error!(ErrorContext::InvalidSyntaxInBlock("vars".to_string()));
                     }
                 }
             } else {
@@ -260,7 +255,10 @@ impl Parser {
         } else {
             if let Some(position) = last_position {
                 if !block_closed {
-                    return Err(template_to_error(VARS_CLOSED, position));
+                    return Err(EnvlError {
+                        message: ErrorContext::IsntClosed("vars".to_string()),
+                        position,
+                    });
                 }
             }
 

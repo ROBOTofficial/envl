@@ -1,6 +1,5 @@
 use std::io::Error;
 
-use envl_config::parser::error::ParserError;
 use envl_utils::{error::EnvlError as EnvlVarsError, types::Position};
 
 #[derive(Debug, Clone)]
@@ -11,7 +10,6 @@ pub struct EnvlLibError {
 #[derive(Debug)]
 pub enum ErrorKind {
     Vars(EnvlVarsError),
-    Config(ParserError),
     Io(Error),
     Lib(EnvlLibError),
 }
@@ -28,14 +26,6 @@ pub fn convert_envl_vars_error(err: EnvlVarsError) -> EnvlError {
         message: err.message.to_string(),
         position: None,
         kind: ErrorKind::Vars(err),
-    }
-}
-
-pub fn convert_envl_config_error(err: ParserError) -> EnvlError {
-    EnvlError {
-        message: err.message.to_string(),
-        position: Some(err.position.clone()),
-        kind: ErrorKind::Config(err),
     }
 }
 

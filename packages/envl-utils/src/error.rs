@@ -52,4 +52,22 @@ pub enum ErrorContext {
 
     #[error("{0} is duplicated")]
     Duplicate(String),
+
+    #[error("Can't use this syntax outside of the vars and settings blocks")]
+    InvalidSettingsSyntax,
+
+    #[error("To use this syntax, you must be inside a {0} block")]
+    MustInBlock(String),
+
+    #[error("Invalid {0} property")]
+    InvalidProperty(String),
+
+    #[error("Invalid syntax in {0} block")]
+    InvalidSyntaxInBlock(String),
+
+    #[error("There are invalid elements")]
+    InvalidElements,
+
+    #[error("Write within the block")]
+    InBlock,
 }

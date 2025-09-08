@@ -2,6 +2,8 @@
 pub mod parser_test {
     use std::collections::HashMap;
 
+    use envl_utils::error::EnvlError;
+
     use crate::{
         lexer::Lexer,
         misc::{
@@ -11,10 +13,10 @@ pub mod parser_test {
             },
             variable::{Type, Value},
         },
-        parser::{error::ParserError, Parser},
+        parser::Parser,
     };
 
-    fn gen_obj(code: String) -> Result<Config, ParserError> {
+    fn gen_obj(code: String) -> Result<Config, EnvlError> {
         let lex = Lexer::new("test.envl".to_string(), code);
         let tokens = lex.generate();
         let parser = Parser::new("test.envl".to_string(), tokens);

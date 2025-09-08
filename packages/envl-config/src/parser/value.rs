@@ -1,9 +1,8 @@
-use crate::{
-    misc::variable::{Type, Value},
-    parser::error::{EnvlConfigErrorTemplate, INVALID_TYPE, MULTIPLE_CHAR},
-};
+use envl_utils::error::ErrorContext;
 
-pub fn parse_value(t: Type, ident: String) -> Result<Value, EnvlConfigErrorTemplate> {
+use crate::misc::variable::{Type, Value};
+
+pub fn parse_value(t: Type, ident: String) -> Result<Value, ErrorContext> {
     match t {
         Type::Null => Ok(Value::Null),
         Type::String => {
@@ -13,7 +12,7 @@ pub fn parse_value(t: Type, ident: String) -> Result<Value, EnvlConfigErrorTempl
                 str_value.remove(0);
                 Ok(Value::String(str_value))
             } else {
-                Err(INVALID_TYPE)
+                Err(ErrorContext::InvalidType)
             }
         }
         Type::Char => {
@@ -24,40 +23,40 @@ pub fn parse_value(t: Type, ident: String) -> Result<Value, EnvlConfigErrorTempl
                 if let Ok(c) = str_value.parse::<char>() {
                     Ok(Value::Char(c))
                 } else {
-                    Err(MULTIPLE_CHAR)
+                    Err(ErrorContext::MultipleChar)
                 }
             } else {
-                Err(INVALID_TYPE)
+                Err(ErrorContext::InvalidType)
             }
         }
         Type::Float => {
             if let Ok(n) = ident.parse::<f64>() {
                 Ok(Value::Float(n))
             } else {
-                Err(INVALID_TYPE)
+                Err(ErrorContext::InvalidType)
             }
         }
         Type::Int => {
             if let Ok(n) = ident.parse::<i64>() {
                 Ok(Value::Int(n))
             } else {
-                Err(INVALID_TYPE)
+                Err(ErrorContext::InvalidType)
             }
         }
         Type::Uint => {
             if let Ok(n) = ident.parse::<u64>() {
                 Ok(Value::Uint(n))
             } else {
-                Err(INVALID_TYPE)
+                Err(ErrorContext::InvalidType)
             }
         }
         Type::Bool => {
             if let Ok(b) = ident.parse::<bool>() {
                 Ok(Value::Bool(b))
             } else {
-                Err(INVALID_TYPE)
+                Err(ErrorContext::InvalidType)
             }
         }
-        _ => Err(INVALID_TYPE),
+        _ => Err(ErrorContext::InvalidType),
     }
 }
