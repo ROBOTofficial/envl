@@ -1,18 +1,13 @@
 use std::{collections::HashMap, slice::Iter};
 
+use envl_utils::error::{EnvlError, ErrorContext};
+
 use crate::{
     misc::token::{Token, Value},
-    parser::{
-        error::{
-            template_to_error, ParserError, COLON_POSITION, COLON_REQUIRED, ELEMENT_NAME_REQUIRED,
-            INVALID_ELEMENTS, INVALID_SYNTAX, IN_BLOCK, STRUCT_CLOSED,
-        },
-        var::array::parse_array,
-        vars::option_value::ParsedValue,
-    },
+    parser::{var::array::parse_array, vars::option_value::ParsedValue},
 };
 
-pub fn parse_struct<'a>(tokens: &mut Iter<'a, Token>) -> Result<ParsedValue, ParserError> {
+pub fn parse_struct<'a>(tokens: &mut Iter<'a, Token>) -> Result<ParsedValue, EnvlError> {
     let mut in_block = false;
     let mut block_closed = false;
     let mut colon_used = false;
@@ -26,21 +21,24 @@ pub fn parse_struct<'a>(tokens: &mut Iter<'a, Token>) -> Result<ParsedValue, Par
     'parse_loop: loop {
         if let Some(token) = tokens.next() {
             macro_rules! error {
-                ($err: expr) => {
-                    parser_error = Some(template_to_error($err, token.position.clone()));
+                ($msg: expr) => {
+                    parser_error = Some(EnvlError {
+                        message: $msg,
+                        position: token.position.clone(),
+                    });
                     break 'parse_loop;
                 };
             }
             macro_rules! set_element_value {
                 ($value: expr) => {
                     if !colon_used {
-                        error!(COLON_REQUIRED);
+                        error!(ErrorContext::Required("Colon".to_string()));
                     }
                     if element_name.is_none() {
-                        error!(ELEMENT_NAME_REQUIRED);
+                        error!(ErrorContext::Required("Element name".to_string()));
                     }
                     if element_value.is_some() {
-                        error!(INVALID_SYNTAX);
+                        error!(ErrorContext::InvalidSyntaxInBlock("struct".to_string()));
                     }
                     element_value = Some($value);
                 };
@@ -48,19 +46,19 @@ pub fn parse_struct<'a>(tokens: &mut Iter<'a, Token>) -> Result<ParsedValue, Par
             macro_rules! insert {
                 () => {
                     if !colon_used {
-                        error!(COLON_REQUIRED);
+                        error!(ErrorContext::Required("Colon".to_string()));
                     }
                     if let Some(ref name) = element_name {
                         if elements.get(name).is_some() {
-                            error!(INVALID_ELEMENTS);
+                            error!(ErrorContext::InvalidElements);
                         }
                         if let Some(ref value) = element_value {
                             elements.insert(name.clone(), value.clone());
                         } else {
-                            error!(INVALID_ELEMENTS);
+                            error!(ErrorContext::InvalidElements);
                         }
                     } else {
-                        error!(ELEMENT_NAME_REQUIRED);
+                        error!(ErrorContext::Required("Element name".to_string()));
                     }
                 };
             }
@@ -80,7 +78,7 @@ pub fn parse_struct<'a>(tokens: &mut Iter<'a, Token>) -> Result<ParsedValue, Par
             }
 
             if !in_block {
-                error!(IN_BLOCK);
+                error!(ErrorContext::InBlock);
             }
 
             match &token.value {
@@ -89,7 +87,7 @@ pub fn parse_struct<'a>(tokens: &mut Iter<'a, Token>) -> Result<ParsedValue, Par
                 }
                 Value::Colon => {
                     if colon_used {
-                        error!(COLON_POSITION);
+                        error!(ErrorContext::InvalidPosition("Colon".to_string()));
                     }
                     colon_used = true;
                 }
@@ -122,7 +120,7 @@ pub fn parse_struct<'a>(tokens: &mut Iter<'a, Token>) -> Result<ParsedValue, Par
                     }
                 }
                 _ => {
-                    error!(INVALID_SYNTAX);
+                    error!(ErrorContext::InvalidSyntaxInBlock("struct".to_string()));
                 }
             }
         } else {
@@ -135,7 +133,10 @@ pub fn parse_struct<'a>(tokens: &mut Iter<'a, Token>) -> Result<ParsedValue, Par
     } else {
         if let Some(position) = last_position {
             if !block_closed {
-                return Err(template_to_error(STRUCT_CLOSED, position));
+                return Err(EnvlError {
+                    message: ErrorContext::IsntClosed("Struct".to_string()),
+                    position,
+                });
             }
         }
 

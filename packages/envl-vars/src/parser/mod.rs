@@ -1,32 +1,17 @@
 use std::collections::HashSet;
 
-use envl_utils::types::Position;
+use envl_utils::error::{EnvlError, ErrorContext};
 
-use crate::{
-    misc::{
-        token::{Token, Value},
-        variable::{Variable, VariableValue},
-    },
-    parser::error::{
-        duplicate_error, ErrorKind, ARRAY_AFTER_EQUAL, ARRAY_INVALID_CLOSE, COLON_POSITION,
-        COMMA_POSITION, DIFFERENT_ORDER, INVALID_SYNTAX, STRUCT_AFTER_EQUAL, STRUCT_INVALID_CLOSE,
-    },
+use crate::misc::{
+    token::{Token, Value},
+    variable::{Variable, VariableValue},
 };
 
 pub mod array;
-pub mod error;
 pub mod ident;
 pub mod parse_struct;
 pub mod test;
 pub mod value;
-
-#[derive(Debug)]
-pub struct ParserError {
-    pub code: u32,
-    pub kind: ErrorKind,
-    pub message: String,
-    pub position: Position,
-}
 
 #[derive(Debug, Clone)]
 pub enum ParsedIdent {
@@ -48,7 +33,7 @@ impl Parser {
         Self { tokens }
     }
 
-    pub fn parse(&self) -> Result<Vec<Variable>, ParserError> {
+    pub fn parse(&self) -> Result<Vec<Variable>, EnvlError> {
         let mut based_token = vec![];
 
         for token in self.tokens.iter() {
@@ -70,7 +55,7 @@ impl Parser {
             name: None,
             value: None,
         };
-        let mut parser_error: Option<ParserError> = None;
+        let mut parser_error: Option<EnvlError> = None;
 
         macro_rules! clear {
             () => {{
@@ -84,10 +69,8 @@ impl Parser {
 
         macro_rules! error {
             ($pos: ident) => {
-                parser_error = Some(ParserError {
-                    kind: DIFFERENT_ORDER.kind,
-                    code: DIFFERENT_ORDER.code,
-                    message: DIFFERENT_ORDER.message.to_string(),
+                parser_error = Some(EnvlError {
+                    message: ErrorContext::InvalidSyntax,
                     position: $pos,
                 })
             };
@@ -106,10 +89,8 @@ impl Parser {
                                     value: Some(v.clone()),
                                 }
                             } else {
-                                parser_error = Some(ParserError {
-                                    kind: ARRAY_AFTER_EQUAL.kind,
-                                    code: ARRAY_AFTER_EQUAL.code,
-                                    message: ARRAY_AFTER_EQUAL.message.to_string(),
+                                parser_error = Some(EnvlError {
+                                    message: ErrorContext::AfterEqual("array".to_string()),
                                     position: position.clone(),
                                 });
                                 break 'parse_loop;
@@ -121,10 +102,8 @@ impl Parser {
                         }
                     },
                     Value::RightSquareBracket => {
-                        parser_error = Some(ParserError {
-                            kind: ARRAY_INVALID_CLOSE.kind,
-                            code: ARRAY_INVALID_CLOSE.code,
-                            message: ARRAY_INVALID_CLOSE.message.to_string(),
+                        parser_error = Some(EnvlError {
+                            message: ErrorContext::InvalidSyntax,
                             position: position.clone(),
                         });
                         break 'parse_loop;
@@ -137,10 +116,8 @@ impl Parser {
                                     value: Some(v.clone()),
                                 }
                             } else {
-                                parser_error = Some(ParserError {
-                                    kind: STRUCT_AFTER_EQUAL.kind,
-                                    code: STRUCT_AFTER_EQUAL.code,
-                                    message: STRUCT_AFTER_EQUAL.message.to_string(),
+                                parser_error = Some(EnvlError {
+                                    message: ErrorContext::AfterEqual("struct".to_string()),
                                     position: position.clone(),
                                 });
                                 break 'parse_loop;
@@ -152,28 +129,22 @@ impl Parser {
                         }
                     },
                     Value::RightCurlyBracket => {
-                        parser_error = Some(ParserError {
-                            kind: STRUCT_INVALID_CLOSE.kind,
-                            code: STRUCT_INVALID_CLOSE.code,
-                            message: STRUCT_INVALID_CLOSE.message.to_string(),
+                        parser_error = Some(EnvlError {
+                            message: ErrorContext::InvalidSyntax,
                             position: position.clone(),
                         });
                         break 'parse_loop;
                     }
                     Value::Colon => {
-                        parser_error = Some(ParserError {
-                            kind: COLON_POSITION.kind,
-                            code: COLON_POSITION.code,
-                            message: COLON_POSITION.message.to_string(),
+                        parser_error = Some(EnvlError {
+                            message: ErrorContext::InvalidPosition("Colon".to_string()),
                             position: position.clone(),
                         });
                         break 'parse_loop;
                     }
                     Value::Comma => {
-                        parser_error = Some(ParserError {
-                            kind: COMMA_POSITION.kind,
-                            code: COMMA_POSITION.code,
-                            message: COMMA_POSITION.message.to_string(),
+                        parser_error = Some(EnvlError {
+                            message: ErrorContext::InvalidPosition("Comma".to_string()),
                             position: position.clone(),
                         });
                         break 'parse_loop;
@@ -236,10 +207,8 @@ impl Parser {
                         }
                     }
                     _ => {
-                        parser_error = Some(ParserError {
-                            kind: INVALID_SYNTAX.kind,
-                            code: INVALID_SYNTAX.code,
-                            message: INVALID_SYNTAX.message.to_string(),
+                        parser_error = Some(EnvlError {
+                            message: ErrorContext::InvalidSyntax,
                             position: token.position.clone(),
                         });
                         break 'parse_loop;
@@ -261,16 +230,13 @@ impl Parser {
         Ok(vars)
     }
 
-    fn duplicate_check(&self, vars: &Vec<Variable>) -> Option<ParserError> {
+    fn duplicate_check(&self, vars: &Vec<Variable>) -> Option<EnvlError> {
         let mut hs = HashSet::new();
 
         for var in vars {
-            if !hs.insert(var.name.clone()) {
-                let err = duplicate_error(&var.name);
-                return Some(ParserError {
-                    kind: err.kind,
-                    code: err.code,
-                    message: err.message.to_string(),
+            if !hs.insert(&var.name) {
+                return Some(EnvlError {
+                    message: ErrorContext::Duplicate(var.name.clone()),
                     position: var.position.clone(),
                 });
             }
