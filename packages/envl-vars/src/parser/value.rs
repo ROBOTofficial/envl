@@ -1,11 +1,10 @@
-use envl_utils::types::Position;
+use envl_utils::{
+    error::{EnvlError, ErrorContext},
+    types::Position,
+};
 
 use crate::{
-    misc::{
-        error::{EnvlVarsError, ErrorContext},
-        num::is_num,
-        variable::VariableValue,
-    },
+    misc::{num::is_num, variable::VariableValue},
     parser::Parser,
 };
 
@@ -14,7 +13,7 @@ impl Parser {
         &self,
         value: &str,
         position: &Position,
-    ) -> Result<VariableValue, EnvlVarsError> {
+    ) -> Result<VariableValue, EnvlError> {
         if value.starts_with('"') && value.ends_with('"') {
             let mut str_value = value.to_owned();
             str_value.remove(value.len() - 1);
@@ -27,7 +26,7 @@ impl Parser {
             if let Ok(c) = str_value.parse::<char>() {
                 Ok(VariableValue::Char(c))
             } else {
-                Err(EnvlVarsError {
+                Err(EnvlError {
                     message: ErrorContext::MultipleChar,
                     position: position.clone(),
                 })
@@ -37,7 +36,7 @@ impl Parser {
         } else if let Ok(b) = value.parse::<bool>() {
             Ok(VariableValue::Bool(b))
         } else {
-            Err(EnvlVarsError {
+            Err(EnvlError {
                 message: ErrorContext::InvalidType,
                 position: position.clone(),
             })

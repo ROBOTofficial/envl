@@ -2,16 +2,15 @@
 mod parser_test {
     use std::collections::HashMap;
 
+    use envl_utils::error::ErrorContext;
+
     use crate::{
         lexer::Lexer,
-        misc::{
-            error::ErrorContext,
-            variable::{Variable, VariableValue, VariableWithoutPosition},
-        },
-        parser::{EnvlVarsError, Parser},
+        misc::variable::{Variable, VariableValue, VariableWithoutPosition},
+        parser::{EnvlError, Parser},
     };
 
-    fn gen_parsed_vars(code: String) -> Result<Vec<Variable>, EnvlVarsError> {
+    fn gen_parsed_vars(code: String) -> Result<Vec<Variable>, EnvlError> {
         let lex = Lexer::new("test.envl".to_string(), code);
         let tokens = lex.generate();
         let parser = Parser::new(tokens);

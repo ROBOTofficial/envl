@@ -1,7 +1,8 @@
 use std::collections::HashSet;
 
+use envl_utils::error::{EnvlError, ErrorContext};
+
 use crate::misc::{
-    error::{EnvlVarsError, ErrorContext},
     token::{Token, Value},
     variable::{Variable, VariableValue},
 };
@@ -32,7 +33,7 @@ impl Parser {
         Self { tokens }
     }
 
-    pub fn parse(&self) -> Result<Vec<Variable>, EnvlVarsError> {
+    pub fn parse(&self) -> Result<Vec<Variable>, EnvlError> {
         let mut based_token = vec![];
 
         for token in self.tokens.iter() {
@@ -54,7 +55,7 @@ impl Parser {
             name: None,
             value: None,
         };
-        let mut parser_error: Option<EnvlVarsError> = None;
+        let mut parser_error: Option<EnvlError> = None;
 
         macro_rules! clear {
             () => {{
@@ -68,7 +69,7 @@ impl Parser {
 
         macro_rules! error {
             ($pos: ident) => {
-                parser_error = Some(EnvlVarsError {
+                parser_error = Some(EnvlError {
                     message: ErrorContext::InvalidSyntax,
                     position: $pos,
                 })
@@ -88,7 +89,7 @@ impl Parser {
                                     value: Some(v.clone()),
                                 }
                             } else {
-                                parser_error = Some(EnvlVarsError {
+                                parser_error = Some(EnvlError {
                                     message: ErrorContext::AfterEqual("array".to_string()),
                                     position: position.clone(),
                                 });
@@ -101,7 +102,7 @@ impl Parser {
                         }
                     },
                     Value::RightSquareBracket => {
-                        parser_error = Some(EnvlVarsError {
+                        parser_error = Some(EnvlError {
                             message: ErrorContext::InvalidSyntax,
                             position: position.clone(),
                         });
@@ -115,7 +116,7 @@ impl Parser {
                                     value: Some(v.clone()),
                                 }
                             } else {
-                                parser_error = Some(EnvlVarsError {
+                                parser_error = Some(EnvlError {
                                     message: ErrorContext::AfterEqual("struct".to_string()),
                                     position: position.clone(),
                                 });
@@ -128,21 +129,21 @@ impl Parser {
                         }
                     },
                     Value::RightCurlyBracket => {
-                        parser_error = Some(EnvlVarsError {
+                        parser_error = Some(EnvlError {
                             message: ErrorContext::InvalidSyntax,
                             position: position.clone(),
                         });
                         break 'parse_loop;
                     }
                     Value::Colon => {
-                        parser_error = Some(EnvlVarsError {
+                        parser_error = Some(EnvlError {
                             message: ErrorContext::InvalidPosition("Colon".to_string()),
                             position: position.clone(),
                         });
                         break 'parse_loop;
                     }
                     Value::Comma => {
-                        parser_error = Some(EnvlVarsError {
+                        parser_error = Some(EnvlError {
                             message: ErrorContext::InvalidPosition("Comma".to_string()),
                             position: position.clone(),
                         });
@@ -206,7 +207,7 @@ impl Parser {
                         }
                     }
                     _ => {
-                        parser_error = Some(EnvlVarsError {
+                        parser_error = Some(EnvlError {
                             message: ErrorContext::InvalidSyntax,
                             position: token.position.clone(),
                         });
@@ -229,12 +230,12 @@ impl Parser {
         Ok(vars)
     }
 
-    fn duplicate_check(&self, vars: &Vec<Variable>) -> Option<EnvlVarsError> {
+    fn duplicate_check(&self, vars: &Vec<Variable>) -> Option<EnvlError> {
         let mut hs = HashSet::new();
 
         for var in vars {
             if !hs.insert(&var.name) {
-                return Some(EnvlVarsError {
+                return Some(EnvlError {
                     message: ErrorContext::Duplicate(var.name.clone()),
                     position: var.position.clone(),
                 });

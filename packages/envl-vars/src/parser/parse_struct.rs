@@ -1,8 +1,9 @@
 use std::{collections::HashMap, slice::Iter};
 
+use envl_utils::error::{EnvlError, ErrorContext};
+
 use crate::{
     misc::{
-        error::{EnvlVarsError, ErrorContext},
         token::{Token, Value},
         variable::VariableValue,
     },
@@ -13,7 +14,7 @@ impl Parser {
     pub fn parse_struct<'a>(
         &self,
         tokens: &mut Iter<'a, Token>,
-    ) -> Result<VariableValue, EnvlVarsError> {
+    ) -> Result<VariableValue, EnvlError> {
         let mut in_block = false;
         let mut hm = HashMap::new();
         let mut parser_error = None;
@@ -36,7 +37,7 @@ impl Parser {
                 macro_rules! insert {
                     ($name: expr, $value: expr) => {
                         if hm.get(&$name).is_some() {
-                            parser_error = Some(EnvlVarsError {
+                            parser_error = Some(EnvlError {
                                 message: ErrorContext::Duplicate($name.to_string()),
                                 position: token.position.clone(),
                             });
@@ -61,7 +62,7 @@ impl Parser {
                 }
 
                 if !in_block {
-                    parser_error = Some(EnvlVarsError {
+                    parser_error = Some(EnvlError {
                         message: ErrorContext::InvalidSyntax,
                         position: token.position.clone(),
                     });
@@ -73,14 +74,14 @@ impl Parser {
                         Ok(value) => match element_name {
                             Some(name) => {
                                 if !colon_used {
-                                    parser_error = Some(EnvlVarsError {
+                                    parser_error = Some(EnvlError {
                                         message: ErrorContext::InvalidPosition("Colon".to_string()),
                                         position: token.position.clone(),
                                     });
                                     break 'parse_struct_loop;
                                 }
                                 if !hm.is_empty() && !comma_used {
-                                    parser_error = Some(EnvlVarsError {
+                                    parser_error = Some(EnvlError {
                                         message: ErrorContext::InvalidPosition("Comma".to_string()),
                                         position: token.position.clone(),
                                     });
@@ -90,7 +91,7 @@ impl Parser {
                                 clean!();
                             }
                             None => {
-                                parser_error = Some(EnvlVarsError {
+                                parser_error = Some(EnvlError {
                                     message: ErrorContext::ItemNotSet,
                                     position: token.position.clone(),
                                 });
@@ -106,14 +107,14 @@ impl Parser {
                         Ok(value) => {
                             if let Some(name) = element_name {
                                 if !colon_used {
-                                    parser_error = Some(EnvlVarsError {
+                                    parser_error = Some(EnvlError {
                                         message: ErrorContext::Required("Colon".to_string()),
                                         position: token.position.clone(),
                                     });
                                     break 'parse_struct_loop;
                                 }
                                 if !hm.is_empty() && !comma_used {
-                                    parser_error = Some(EnvlVarsError {
+                                    parser_error = Some(EnvlError {
                                         message: ErrorContext::Required("Comma".to_string()),
                                         position: token.position.clone(),
                                     });
@@ -122,7 +123,7 @@ impl Parser {
                                 insert!(name, value);
                                 clean!();
                             } else {
-                                parser_error = Some(EnvlVarsError {
+                                parser_error = Some(EnvlError {
                                     message: ErrorContext::AfterEqual("array".to_string()),
                                     position: token.position.clone(),
                                 });
@@ -136,7 +137,7 @@ impl Parser {
                     },
                     Value::Comma => {
                         if comma_used {
-                            parser_error = Some(EnvlVarsError {
+                            parser_error = Some(EnvlError {
                                 message: ErrorContext::InvalidPosition("Comma".to_string()),
                                 position: token.position.clone(),
                             });
@@ -146,7 +147,7 @@ impl Parser {
                     }
                     Value::Colon => {
                         if colon_used {
-                            parser_error = Some(EnvlVarsError {
+                            parser_error = Some(EnvlError {
                                 message: ErrorContext::InvalidPosition("Colon".to_string()),
                                 position: token.position.clone(),
                             });
@@ -160,7 +161,7 @@ impl Parser {
                         }
                         Some(name) if colon_used => {
                             if !hm.is_empty() && !comma_used {
-                                parser_error = Some(EnvlVarsError {
+                                parser_error = Some(EnvlError {
                                     message: ErrorContext::Required("Comma".to_string()),
                                     position: token.position.clone(),
                                 });
@@ -183,7 +184,7 @@ impl Parser {
                             } else {
                                 ErrorContext::ItemNotSet
                             };
-                            parser_error = Some(EnvlVarsError {
+                            parser_error = Some(EnvlError {
                                 message,
                                 position: token.position.clone(),
                             });
@@ -191,7 +192,7 @@ impl Parser {
                         }
                     },
                     _ => {
-                        parser_error = Some(EnvlVarsError {
+                        parser_error = Some(EnvlError {
                             message: ErrorContext::AfterEqual("struct".to_string()),
                             position: token.position.clone(),
                         });
@@ -208,7 +209,7 @@ impl Parser {
         } else {
             if let Some(position) = last_position {
                 if !struct_closed {
-                    return Err(EnvlVarsError {
+                    return Err(EnvlError {
                         message: ErrorContext::AfterEqual("struct".to_string()),
                         position,
                     });

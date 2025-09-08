@@ -1,8 +1,9 @@
-use envl_utils::types::Position;
+use crate::types::Position;
+
 use thiserror::Error;
 
 #[macro_export]
-macro_rules! envl_vars_error_message {
+macro_rules! gen_error_message {
     ($msg: literal, $pos: ident) => {
         format!(
             "Error: {} (at {}:{}:{})",
@@ -12,7 +13,7 @@ macro_rules! envl_vars_error_message {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct EnvlVarsError {
+pub struct EnvlError {
     pub message: ErrorContext,
     pub position: Position,
 }

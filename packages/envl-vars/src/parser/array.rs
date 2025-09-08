@@ -1,8 +1,9 @@
 use std::slice::Iter;
 
+use envl_utils::error::{EnvlError, ErrorContext};
+
 use crate::{
     misc::{
-        error::{EnvlVarsError, ErrorContext},
         token::{Token, Value},
         variable::VariableValue,
     },
@@ -13,9 +14,9 @@ impl Parser {
     pub fn parse_array<'a>(
         &self,
         tokens: &mut Iter<'a, Token>,
-    ) -> Result<VariableValue, EnvlVarsError> {
+    ) -> Result<VariableValue, EnvlError> {
         let mut array_contents = Vec::new();
-        let mut parser_error: Option<EnvlVarsError> = None;
+        let mut parser_error: Option<EnvlError> = None;
         let mut comma_used = false;
         let mut array_closed = false;
         let mut last_position = None;
@@ -28,7 +29,7 @@ impl Parser {
                     Value::LeftSquareBracket => match self.parse_array(tokens) {
                         Ok(v) => {
                             if !array_contents.is_empty() && !comma_used {
-                                parser_error = Some(EnvlVarsError {
+                                parser_error = Some(EnvlError {
                                     message: ErrorContext::Required("Comma".to_string()),
                                     position: token.position.clone(),
                                 });
@@ -48,7 +49,7 @@ impl Parser {
                     }
                     Value::Comma => {
                         if comma_used {
-                            parser_error = Some(EnvlVarsError {
+                            parser_error = Some(EnvlError {
                                 message: ErrorContext::Required("Comma".to_string()),
                                 position: token.position.clone(),
                             });
@@ -59,7 +60,7 @@ impl Parser {
                     Value::Struct => match self.parse_struct(tokens) {
                         Ok(value) => {
                             if !array_contents.is_empty() && !comma_used {
-                                parser_error = Some(EnvlVarsError {
+                                parser_error = Some(EnvlError {
                                     message: ErrorContext::Required("Comma".to_string()),
                                     position: token.position.clone(),
                                 });
@@ -78,7 +79,7 @@ impl Parser {
                         match value {
                             Ok(v) => {
                                 if !array_contents.is_empty() && !comma_used {
-                                    parser_error = Some(EnvlVarsError {
+                                    parser_error = Some(EnvlError {
                                         message: ErrorContext::Required("Comma".to_string()),
                                         position: token.position.clone(),
                                     });
@@ -95,7 +96,7 @@ impl Parser {
                     }
                     Value::Comment(_) => {}
                     _ => {
-                        parser_error = Some(EnvlVarsError {
+                        parser_error = Some(EnvlError {
                             message: ErrorContext::InvalidSyntax,
                             position: token.position.clone(),
                         });
@@ -112,7 +113,7 @@ impl Parser {
         } else {
             if let Some(position) = last_position {
                 if !array_closed {
-                    return Err(EnvlVarsError {
+                    return Err(EnvlError {
                         message: ErrorContext::IsntClosed("Array".to_string()),
                         position,
                     });

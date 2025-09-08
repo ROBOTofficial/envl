@@ -1,8 +1,7 @@
 use std::io::Error;
 
 use envl_config::parser::error::ParserError;
-use envl_utils::types::Position;
-use envl_vars::misc::error::EnvlVarsError;
+use envl_utils::{error::EnvlError as EnvlVarsError, types::Position};
 
 #[derive(Debug, Clone)]
 pub struct EnvlLibError {
