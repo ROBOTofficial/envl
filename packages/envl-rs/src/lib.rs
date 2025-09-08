@@ -16,8 +16,8 @@ use crate::{
     generator::{generate_file, rust::value::gen_value},
     misc::{
         error::{
-            convert_envl_config_error, convert_envl_lib_error, convert_envl_vars_error,
-            convert_io_error, EnvlError, EnvlLibError,
+            convert_envl_lib_error, convert_envl_vars_error, convert_io_error, EnvlError,
+            EnvlLibError,
         },
         filesystem::{read_file, write_file},
         vars::vars_to_hashmap,
@@ -175,6 +175,6 @@ pub fn load_files(
                 Err(err) => Err(err),
             }
         }
-        Err(err) => Err(Box::from(convert_envl_config_error(err))),
+        Err(err) => Err(Box::from(convert_envl_vars_error(err))),
     }
 }

@@ -1,18 +1,13 @@
 use std::slice::Iter;
 
+use envl_utils::error::{EnvlError, ErrorContext};
+
 use crate::{
     misc::token::{Token, Value},
-    parser::{
-        error::{
-            template_to_error, ParserError, ARRAY_CLOSED, COMMA_POSITION, COMMA_REQUIRED,
-            INVALID_SYNTAX,
-        },
-        var::parse_struct::parse_struct,
-        vars::option_value::ParsedValue,
-    },
+    parser::{var::parse_struct::parse_struct, vars::option_value::ParsedValue},
 };
 
-pub fn parse_array<'a>(tokens: &mut Iter<'a, Token>) -> Result<ParsedValue, ParserError> {
+pub fn parse_array<'a>(tokens: &mut Iter<'a, Token>) -> Result<ParsedValue, EnvlError> {
     let mut block_closed = false;
     let mut comma_used = false;
     let mut elements = Vec::new();
@@ -23,15 +18,18 @@ pub fn parse_array<'a>(tokens: &mut Iter<'a, Token>) -> Result<ParsedValue, Pars
     'parse_loop: loop {
         if let Some(token) = tokens.next() {
             macro_rules! error {
-                ($err: expr) => {
-                    parser_error = Some(template_to_error($err, token.position.clone()));
+                ($msg: expr) => {
+                    parser_error = Some(EnvlError {
+                        message: $msg,
+                        position: token.position.clone(),
+                    });
                     break 'parse_loop;
                 };
             }
             macro_rules! insert {
                 ($value: expr) => {
                     if !elements.is_empty() && !comma_used {
-                        error!(COMMA_REQUIRED);
+                        error!(ErrorContext::Required("Comma".to_string()));
                     }
                     elements.push($value.clone());
                     comma_used = false;
@@ -43,7 +41,7 @@ pub fn parse_array<'a>(tokens: &mut Iter<'a, Token>) -> Result<ParsedValue, Pars
             match &token.value {
                 Value::Comma => {
                     if comma_used {
-                        error!(COMMA_POSITION);
+                        error!(ErrorContext::Required("Comma".to_string()));
                     }
                     comma_used = true;
                 }
@@ -85,7 +83,7 @@ pub fn parse_array<'a>(tokens: &mut Iter<'a, Token>) -> Result<ParsedValue, Pars
                     elements.push(ParsedValue::Value(v.to_owned()));
                 }
                 _ => {
-                    error!(INVALID_SYNTAX);
+                    error!(ErrorContext::InvalidSyntaxInBlock("array".to_string()));
                 }
             }
         } else {
@@ -98,7 +96,10 @@ pub fn parse_array<'a>(tokens: &mut Iter<'a, Token>) -> Result<ParsedValue, Pars
     } else {
         if let Some(position) = last_position {
             if !block_closed {
-                return Err(template_to_error(ARRAY_CLOSED, position));
+                return Err(EnvlError {
+                    message: ErrorContext::IsntClosed("Array".to_string()),
+                    position,
+                });
             }
         }
 

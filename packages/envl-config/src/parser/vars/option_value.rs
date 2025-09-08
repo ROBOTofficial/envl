@@ -1,6 +1,9 @@
 use std::{collections::HashMap, slice::Iter};
 
-use envl_utils::types::Position;
+use envl_utils::{
+    error::{EnvlError, ErrorContext},
+    types::Position,
+};
 
 use crate::{
     misc::{
@@ -8,11 +11,6 @@ use crate::{
         variable::{Type, Value as ConfigValue},
     },
     parser::{
-        error::{
-            template_to_error, ParserError, COLON_POSITION, COLON_REQUIRED, COMMA_POSITION,
-            ELEMENT_NAME_REQUIRED, INVALID_ELEMENTS, INVALID_LEFT_PARENTHESES, INVALID_SYNTAX,
-            INVALID_TYPE, OPTION_CLOSED,
-        },
         value::parse_value,
         var::{array::parse_array, parse_struct::parse_struct},
         Parser,
@@ -31,12 +29,15 @@ pub fn parse_parsed_value(
     v: ParsedValue,
     t: Type,
     position: Position,
-) -> Result<ConfigValue, ParserError> {
+) -> Result<ConfigValue, EnvlError> {
     match v {
         ParsedValue::Null => Ok(ConfigValue::Null),
         ParsedValue::Value(value) => match parse_value(t, value) {
             Ok(result) => Ok(result),
-            Err(err) => Err(template_to_error(err, position)),
+            Err(err) => Err(EnvlError {
+                message: err,
+                position,
+            }),
         },
         ParsedValue::Struct(values) => match t {
             Type::Struct(t) => {
@@ -47,7 +48,10 @@ pub fn parse_parsed_value(
                         match parse_parsed_value(value, value_type.clone(), position.clone()) {
                             Ok(result) => {
                                 if elements.contains_key(&name) {
-                                    return Err(template_to_error(INVALID_ELEMENTS, position));
+                                    return Err(EnvlError {
+                                        message: ErrorContext::InvalidElements,
+                                        position,
+                                    });
                                 }
                                 elements.insert(name.clone(), result);
                             }
@@ -56,13 +60,19 @@ pub fn parse_parsed_value(
                             }
                         }
                     } else {
-                        return Err(template_to_error(INVALID_TYPE, position));
+                        return Err(EnvlError {
+                            message: ErrorContext::InvalidType,
+                            position,
+                        });
                     }
                 }
 
                 Ok(ConfigValue::Struct(elements))
             }
-            _ => Err(template_to_error(INVALID_TYPE, position)),
+            _ => Err(EnvlError {
+                message: ErrorContext::InvalidType,
+                position,
+            }),
         },
         ParsedValue::Array(values) => match t {
             Type::Array(boxed_type) => {
@@ -82,7 +92,10 @@ pub fn parse_parsed_value(
 
                 Ok(ConfigValue::Array(elements))
             }
-            _ => Err(template_to_error(INVALID_TYPE, position)),
+            _ => Err(EnvlError {
+                message: ErrorContext::InvalidType,
+                position,
+            }),
         },
     }
 }
@@ -91,7 +104,7 @@ impl Parser {
     pub fn parse_option_value<'a>(
         &self,
         tokens: &mut Iter<'a, Token>,
-    ) -> Result<(ParsedValue, ParsedValue), ParserError> {
+    ) -> Result<(ParsedValue, ParsedValue), EnvlError> {
         let mut block_closed = false;
         let mut comma_used = false;
         let mut colon_used = false;
@@ -106,18 +119,21 @@ impl Parser {
         'parse_loop: loop {
             if let Some(token) = tokens.next() {
                 macro_rules! error {
-                    ($err: expr) => {
-                        parser_error = Some(template_to_error($err, token.position.clone()));
+                    ($msg: expr) => {
+                        parser_error = Some(EnvlError {
+                            message: $msg,
+                            position: token.position.clone(),
+                        });
                         break 'parse_loop;
                     };
                 }
                 macro_rules! insert {
                     ($value: expr) => {
                         if !colon_used {
-                            error!(COLON_REQUIRED);
+                            error!(ErrorContext::Required("Colon".to_string()));
                         }
                         if !comma_used && inserted_count != 0 {
-                            error!(COMMA_POSITION);
+                            error!(ErrorContext::Required("Comma".to_string()));
                         } else {
                             comma_used = false;
                         }
@@ -129,7 +145,9 @@ impl Parser {
                                 actions_value = $value;
                             }
                             _ => {
-                                error!(INVALID_SYNTAX);
+                                error!(ErrorContext::InvalidSyntaxInBlock(
+                                    "option value".to_string()
+                                ));
                             }
                         }
                         element_name = None;
@@ -142,7 +160,7 @@ impl Parser {
 
                 match &token.value {
                     Value::LeftParentheses => {
-                        error!(INVALID_LEFT_PARENTHESES);
+                        error!(ErrorContext::InvalidPosition("(".to_string()));
                     }
                     Value::RightParentheses => {
                         block_closed = true;
@@ -150,13 +168,13 @@ impl Parser {
                     }
                     Value::Colon => {
                         if colon_used || element_name.is_none() {
-                            error!(COLON_POSITION);
+                            error!(ErrorContext::InvalidPosition("Colon".to_string()));
                         }
                         colon_used = true;
                     }
                     Value::Comma => {
                         if comma_used || element_name.is_some() {
-                            error!(COMMA_POSITION);
+                            error!(ErrorContext::InvalidPosition("Comma".to_string()));
                         }
                         comma_used = true;
                     }
@@ -171,7 +189,7 @@ impl Parser {
                         if element_name.is_some() {
                             insert!(ParsedValue::Null);
                         } else {
-                            error!(ELEMENT_NAME_REQUIRED);
+                            error!(ErrorContext::Required("Element name".to_string()));
                         }
                     }
                     Value::Struct => match parse_struct(tokens) {
@@ -193,7 +211,9 @@ impl Parser {
                         }
                     },
                     _ => {
-                        error!(INVALID_SYNTAX);
+                        error!(ErrorContext::InvalidSyntaxInBlock(
+                            "option value".to_string()
+                        ));
                     }
                 }
             } else {
@@ -206,7 +226,10 @@ impl Parser {
         } else {
             if let Some(position) = last_position {
                 if !block_closed {
-                    return Err(template_to_error(OPTION_CLOSED, position));
+                    return Err(EnvlError {
+                        message: ErrorContext::IsntClosed("option".to_string()),
+                        position,
+                    });
                 }
             }
 

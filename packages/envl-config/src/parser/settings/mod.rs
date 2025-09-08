@@ -1,38 +1,34 @@
 use std::slice::Iter;
 
-use envl_utils::types::Position;
+use envl_utils::{
+    error::{EnvlError, ErrorContext},
+    types::Position,
+};
 
 use crate::{
     misc::{
         config::{Setting, Settings},
         token::{Token, Value},
     },
-    parser::{
-        error::{
-            template_to_error, ParserError, EQUAL_REQUIRED, INVALID_EQUAL,
-            INVALID_LEFT_CURLY_POSITION, INVALID_SETTING, INVALID_SYNTAX_IN_SETTINGS, INVALID_TYPE,
-            MUST_IN_VARS_BLOCK, SETTINGS_CLOSED,
-        },
-        Parser,
-    },
+    parser::Parser,
 };
 
 impl Parser {
-    fn parse_string(&self, value: &str, position: &Position) -> Result<String, ParserError> {
+    fn parse_string(&self, value: &str, position: &Position) -> Result<String, EnvlError> {
         if value.starts_with('"') && value.ends_with('"') {
             let mut str_value = value.to_owned();
             str_value.remove(value.len() - 1);
             str_value.remove(0);
             Ok(str_value)
         } else {
-            Err(template_to_error(INVALID_TYPE, position.clone()))
+            Err(EnvlError {
+                message: ErrorContext::InvalidType,
+                position: position.clone(),
+            })
         }
     }
 
-    pub fn parse_settings<'a>(
-        &self,
-        tokens: &mut Iter<'a, Token>,
-    ) -> Result<Settings, ParserError> {
+    pub fn parse_settings<'a>(&self, tokens: &mut Iter<'a, Token>) -> Result<Settings, EnvlError> {
         let mut in_block = false;
         let mut block_closed = false;
         let mut equal_used = false;
@@ -48,8 +44,11 @@ impl Parser {
         'parse_loop: loop {
             if let Some(token) = tokens.next() {
                 macro_rules! error {
-                    ($err: expr) => {
-                        parser_error = Some(template_to_error($err, token.position.clone()));
+                    ($msg: expr) => {
+                        parser_error = Some(EnvlError {
+                            message: $msg,
+                            position: token.position.clone(),
+                        });
                         break 'parse_loop;
                     };
                 }
@@ -59,7 +58,7 @@ impl Parser {
                 match &token.value {
                     Value::LeftCurlyBracket => {
                         if in_block {
-                            error!(INVALID_LEFT_CURLY_POSITION);
+                            error!(ErrorContext::InvalidPosition("{".to_string()));
                         }
                         in_block = true;
                         continue;
@@ -72,20 +71,20 @@ impl Parser {
                 }
 
                 if !in_block {
-                    error!(MUST_IN_VARS_BLOCK);
+                    error!(ErrorContext::MustInBlock("vars".to_string()));
                 }
 
                 match &token.value {
                     Value::Equal => {
                         if equal_used || target_prop.is_none() {
-                            error!(INVALID_EQUAL);
+                            error!(ErrorContext::InvalidPosition("Equal".to_string()));
                         }
                         equal_used = true;
                     }
                     Value::Semi => {
                         if let (Some(prop), Some(value)) = (target_prop, target_value) {
                             if !equal_used {
-                                error!(EQUAL_REQUIRED);
+                                error!(ErrorContext::Required("Equal".to_string()));
                             }
                             match prop {
                                 "envl_file_path" => match self.parse_string(value, &token.position)
@@ -102,7 +101,7 @@ impl Parser {
                                     }
                                 },
                                 _ => {
-                                    error!(INVALID_SETTING);
+                                    error!(ErrorContext::InvalidProperty("settings".to_string()));
                                 }
                             }
                         }
@@ -115,7 +114,7 @@ impl Parser {
                         }
                     }
                     _ => {
-                        error!(INVALID_SYNTAX_IN_SETTINGS);
+                        error!(ErrorContext::InvalidSyntaxInBlock("settings".to_string()));
                     }
                 }
             } else {
@@ -128,7 +127,10 @@ impl Parser {
         } else {
             if let Some(position) = last_position {
                 if !block_closed {
-                    return Err(template_to_error(SETTINGS_CLOSED, position));
+                    return Err(EnvlError {
+                        message: ErrorContext::IsntClosed("Settings".to_string()),
+                        position,
+                    });
                 }
             }
 

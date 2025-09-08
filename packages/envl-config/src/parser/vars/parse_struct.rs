@@ -1,27 +1,22 @@
 use std::{collections::HashMap, slice::Iter};
 
+use envl_utils::error::{EnvlError, ErrorContext};
+
 use crate::{
     misc::{
         token::{Token, Value},
         variable::Type,
     },
-    parser::{
-        error::{
-            duplicate_error, template_to_error, ParserError, COLON_POSITION, COLON_REQUIRED,
-            ELEMENT_NAME_REQUIRED, INVALID_ELEMENTS, INVALID_LEFT_CURLY_POSITION, INVALID_SYNTAX,
-            MUST_IN_VARS_BLOCK, STRUCT_CLOSED,
-        },
-        Parser,
-    },
+    parser::Parser,
 };
 
 impl Parser {
-    pub fn parse_struct<'a>(&self, tokens: &mut Iter<'a, Token>) -> Result<Type, ParserError> {
+    pub fn parse_struct<'a>(&self, tokens: &mut Iter<'a, Token>) -> Result<Type, EnvlError> {
         let mut in_block = false;
         let mut block_closed = false;
         let mut colon_used = false;
         let mut last_position = None;
-        let mut target_prop = None;
+        let mut target_prop: Option<String> = None;
         let mut target_value = None;
         let mut elements = HashMap::new();
 
@@ -30,19 +25,21 @@ impl Parser {
         'parse_loop: loop {
             if let Some(token) = tokens.next() {
                 macro_rules! error {
-                    ($err: expr) => {
-                        parser_error = Some(template_to_error($err, token.position.clone()));
+                    ($msg: expr) => {
+                        parser_error = Some(EnvlError {
+                            message: $msg,
+                            position: token.position.clone(),
+                        });
                         break 'parse_loop;
                     };
                 }
                 macro_rules! insert {
                     ($name: expr, $value: expr) => {
                         if !colon_used {
-                            error!(COLON_REQUIRED);
+                            error!(ErrorContext::Required("Colon".to_string()));
                         }
                         if elements.get(&$name).is_some() {
-                            let err = duplicate_error(&$name);
-                            error!(err);
+                            error!(ErrorContext::Duplicate($name.to_string()));
                         }
                         elements.insert($name, $value);
                         target_prop = None;
@@ -54,14 +51,14 @@ impl Parser {
                     ($value: expr) => {
                         if target_prop.is_some() {
                             if !colon_used {
-                                error!(COLON_REQUIRED);
+                                error!(ErrorContext::Required("Colon".to_string()));
                             }
                             if target_value.is_some() {
-                                error!(INVALID_SYNTAX);
+                                error!(ErrorContext::InvalidSyntaxInBlock("struct".to_string()));
                             }
                             target_value = Some($value.to_owned());
                         } else {
-                            error!(ELEMENT_NAME_REQUIRED);
+                            error!(ErrorContext::Required("Element name".to_string()));
                         }
                     };
                 }
@@ -71,7 +68,7 @@ impl Parser {
                 match &token.value {
                     Value::LeftCurlyBracket => {
                         if in_block {
-                            error!(INVALID_LEFT_CURLY_POSITION);
+                            error!(ErrorContext::InvalidPosition("{".to_string()));
                         }
                         in_block = true;
                         continue;
@@ -84,13 +81,13 @@ impl Parser {
                 }
 
                 if !in_block {
-                    error!(MUST_IN_VARS_BLOCK);
+                    error!(ErrorContext::MustInBlock("vars".to_string()));
                 }
 
                 match &token.value {
                     Value::Colon => {
                         if colon_used || target_prop.is_none() {
-                            error!(COLON_POSITION);
+                            error!(ErrorContext::Required("Colon".to_string()));
                         }
                         colon_used = true;
                     }
@@ -99,12 +96,12 @@ impl Parser {
                             insert!(name, value);
                         }
                         _ => {
-                            error!(INVALID_SYNTAX);
+                            error!(ErrorContext::InvalidSyntaxInBlock("struct".to_string()));
                         }
                     },
                     Value::Ident(v) => {
                         if target_prop.is_some() {
-                            error!(INVALID_ELEMENTS);
+                            error!(ErrorContext::InvalidElements);
                         }
                         target_prop = Some(v.to_owned());
                     }
@@ -139,7 +136,7 @@ impl Parser {
                         }
                     },
                     _ => {
-                        error!(INVALID_SYNTAX);
+                        error!(ErrorContext::InvalidSyntaxInBlock("struct".to_string()));
                     }
                 }
             } else {
@@ -152,7 +149,10 @@ impl Parser {
         } else {
             if let Some(position) = last_position {
                 if !block_closed {
-                    return Err(template_to_error(STRUCT_CLOSED, position));
+                    return Err(EnvlError {
+                        message: ErrorContext::IsntClosed("struct".to_string()),
+                        position,
+                    });
                 }
             }
 
