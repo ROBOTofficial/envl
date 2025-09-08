@@ -200,7 +200,6 @@ name = "envl-vars"
 version = "1.1.0"
 dependencies = [
  "envl-utils",
- "thiserror",
 ]
 
 [[package]]

@@ -11,4 +11,3 @@ rust-version.workspace = true
 
 [dependencies]
 envl-utils = { version = "0.2.0" }
-thiserror.workspace = true
