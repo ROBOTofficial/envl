@@ -1,6 +1,6 @@
 [package]
 name = "envl-cli"
-version = "0.1.0"
+version = "0.2.0"
 description = "envl's cli"
 repository.workspace = true
 license.workspace = true
