@@ -1,6 +1,6 @@
 [package]
 name = "envl-utils"
-version = "0.2.0"
+version = "0.3.0"
 description = "util elements for envl"
 repository.workspace = true
 license.workspace = true

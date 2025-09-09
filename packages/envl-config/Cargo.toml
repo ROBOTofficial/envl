@@ -1,6 +1,6 @@
 [package]
 name = "envl-config"
-version = "0.3.0"
+version = "0.4.0"
 description = "parser and lexer for .envlconf file."
 repository.workspace = true
 license.workspace = true
@@ -10,5 +10,5 @@ rust-version.workspace = true
 [lib]
 
 [dependencies]
-envl-utils = { version = "0.2.0" }
+envl-utils = { version = "0.3.0", path = "../envl-utils" }
 thiserror.workspace = true
