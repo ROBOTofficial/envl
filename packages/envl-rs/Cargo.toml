@@ -11,7 +11,7 @@ rust-version.workspace = true
 
 [dependencies]
 tokio = { version = "1.47.1", features = ["full"] }
-envl-config = { version = "0.3.0" }
+envl-config = { version = "0.4.0", path = "../envl-config" }
 envl-vars = { version = "1.2.0", path = "../envl-vars" }
 envl-utils = { version = "0.3.0", path = "../envl-utils" }
 proc-macro2 = { version = "1.0.101" }
