@@ -1,6 +1,6 @@
 [package]
 name = "envl"
-version = "0.5.0"
+version = "0.6.0"
 description = "load .envl and .envlconf"
 repository.workspace = true
 license.workspace = true
