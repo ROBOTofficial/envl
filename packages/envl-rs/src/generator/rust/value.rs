@@ -10,7 +10,7 @@ pub fn gen_value(
     name: String,
     t: Type,
     v: Value,
-    structs: &mut Vec<String>,
+    structs: &mut Vec<TokenStream>,
 ) -> Result<TokenStream, Error> {
     let result = match &v {
         Value::Null => Ok(quote! {None}),

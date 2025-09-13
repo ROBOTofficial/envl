@@ -20,5 +20,6 @@ mod test {
         assert_eq!(env.b, 123);
         assert!(env.c);
         assert_eq!(env.d, vec![123, 456]);
+        assert_eq!(env.e.a, 111);
     }
 }

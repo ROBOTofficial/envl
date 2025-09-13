@@ -10,19 +10,19 @@ pub fn gen_struct(
     name: String,
     t: HashMap<String, Type>,
     v: HashMap<String, Value>,
-    structs: &mut Vec<String>,
+    structs: &mut Vec<TokenStream>,
 ) -> Result<TokenStream, Error> {
-    let struct_type = format!("Struct{}", name);
-    let struct_name = format!("struct{}", name).to_uppercase();
+    let struct_type = format!("Struct{}", name).parse::<TokenStream>().unwrap();
+    let struct_name = format!("struct{}", name).parse::<TokenStream>().unwrap();
     let mut struct_values = Vec::new();
 
     for (n, element_type) in t {
         if let Some(value) = v.get(&n) {
             let element_name = match value {
                 Value::Struct(_) => {
-                    format!("{}{}", name.to_owned(), struct_name)
+                    format!("{}{}", n.to_owned(), struct_name)
                 }
-                _ => name.to_owned(),
+                _ => n.to_owned(),
             };
             match gen_value(
                 element_name.to_owned(),
@@ -45,24 +45,20 @@ pub fn gen_struct(
     let elements = struct_values
         .iter()
         .map(|(n, v)| {
-            quote! {stringify!(#n), stringify!(#v)}
+            let name = n.parse::<TokenStream>().unwrap();
+            quote! {#name: #v}
         })
         .collect::<Vec<_>>();
 
-    structs.push(
-        quote! {
-            pub const #struct_name = struct #struct_type {
-                #(
-                    pub #elements,
-                )*
-            };
-        }
-        .to_string(),
-    );
-
-    let result = struct_name.parse::<TokenStream>().unwrap();
+    structs.push(quote! {
+        let #struct_name = #struct_type {
+            #(
+                #elements,
+            )*
+        };
+    });
 
     Ok(quote! {
-        #result
+        #struct_name
     })
 }

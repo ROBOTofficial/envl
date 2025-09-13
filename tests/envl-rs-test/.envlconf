@@ -4,5 +4,8 @@ vars {
     a: string,
     b: int,
     c: bool,
-    d: Array<int>
+    d: Array<int>,
+    e: struct {
+        a: int;
+    }
 }
