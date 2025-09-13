@@ -1,6 +1,6 @@
 [package]
 name = "envl"
-version = "0.6.0"
+version.workspace = true
 description = "load .envl and .envlconf"
 repository.workspace = true
 license.workspace = true
@@ -11,9 +11,9 @@ rust-version.workspace = true
 
 [dependencies]
 tokio = { version = "1.47.1", features = ["full"] }
-envl-config = { version = "0.4.0", path = "../envl-config" }
-envl-vars = { version = "1.2.0", path = "../envl-vars" }
-envl-utils = { version = "0.3.0", path = "../envl-utils" }
+envl-config.workspace = true
+envl-vars.workspace = true
+envl-utils.workspace = true
 proc-macro2 = { version = "1.0.101" }
 quote = { version = "1.0.40" }
 syn = { version = "2.0.106", features = ["full", "extra-traits"] }
