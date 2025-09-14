@@ -10,6 +10,12 @@ pub mod array;
 pub mod gen_struct;
 pub mod value;
 
+pub fn struct_derive() -> TokenStream {
+    quote! {
+        #[derive(Debug, Clone, PartialEq)]
+    }
+}
+
 pub fn parse_v_type(v_name: String, v_type: Type, structs: &mut Vec<TokenStream>) -> TokenStream {
     match v_type {
         Type::Array(boxed_element_type) => {
@@ -31,6 +37,7 @@ pub fn parse_v_type(v_name: String, v_type: Type, structs: &mut Vec<TokenStream>
             }
         }
         Type::Struct(elements) => {
+            let s_derive = struct_derive();
             let struct_name = format!("Struct{}", v_name).parse::<TokenStream>().unwrap();
             let struct_value = elements
                 .iter()
@@ -48,7 +55,7 @@ pub fn parse_v_type(v_name: String, v_type: Type, structs: &mut Vec<TokenStream>
                 .collect::<Vec<_>>();
 
             structs.push(quote! {
-                #[derive(Debug, Clone, PartialEq)]
+                #s_derive
                 #[rustfmt::skip]
                 pub struct #struct_name {
                     #(
@@ -90,6 +97,7 @@ pub fn parse_var(
 }
 
 pub fn generate_rust_file(data: VariableHashMap) -> Result<String, Error> {
+    let s_derive = struct_derive();
     let mut structs = Vec::new();
     let mut struct_values = Vec::new();
     let mut types_hm = HashMap::new();
@@ -130,7 +138,7 @@ pub fn generate_rust_file(data: VariableHashMap) -> Result<String, Error> {
 
         #(#structs)*
 
-        #[derive(Debug, Clone, PartialEq)]
+        #s_derive
         #[rustfmt::skip]
         pub struct Env {
             #(
