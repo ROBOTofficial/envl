@@ -2,6 +2,12 @@
 
 This is an envl lib for Rust.
 
+## Install
+
+```console
+cargo add envl
+```
+
 ## Usage
 
 For more details, please see [here](../../tests/envl-rs-test).
@@ -14,7 +20,19 @@ vars {
     a: string,
     b: int,
     c: bool,
-    d: Array<int>
+    d: Array<int>,
+    e: struct {
+        v: struct {
+            a: string;
+        };
+        w: Array<struct {
+            a: string;
+        }>;
+        x: int;
+        y: bool;
+        z: Array<string>;
+    },
+    f: Array<Array<bool>>
 }
 ```
 
@@ -24,6 +42,23 @@ a = "123";
 b = 123;
 c = true;
 d = [123, 456];
+e = struct {
+    v: struct {
+        a: "hello world"
+    },
+    w: [
+        struct {
+            a: "hi!"
+        }
+    ],
+    x: 111,
+    y: false,
+    z: ["hello", "world"],
+};
+f = [
+    [true],
+    [false]
+];
 ```
 
 **Cargo.toml**

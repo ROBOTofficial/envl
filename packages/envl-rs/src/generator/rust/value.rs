@@ -10,7 +10,7 @@ pub fn gen_value(
     name: String,
     t: Type,
     v: Value,
-    structs: &mut Vec<String>,
+    structs: &mut Vec<TokenStream>,
 ) -> Result<TokenStream, Error> {
     let result = match &v {
         Value::Null => Ok(quote! {None}),
@@ -22,7 +22,12 @@ pub fn gen_value(
         Value::Bool(b) => Ok(quote! {#b}),
         Value::Array(a) => match &t {
             Type::Array(boxed_type) => {
-                match gen_array(name.to_owned(), *boxed_type.to_owned(), a.to_vec(), structs) {
+                match gen_array(
+                    format!("Array{}", &name),
+                    *boxed_type.to_owned(),
+                    a.to_vec(),
+                    structs,
+                ) {
                     Ok(r) => Ok(r),
                     Err(err) => Err(err),
                 }

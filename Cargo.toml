@@ -10,7 +10,7 @@ members = [
 ]
 
 [workspace.package]
-version = "0.7.0"
+version = "0.8.0"
 repository = "https://github.com/ROBOTofficial/envl"
 license = "MIT"
 edition = "2021"
@@ -18,10 +18,10 @@ rust-version = "1.91.0"
 
 [workspace.dependencies]
 thiserror = { version = "2.0.16" }
-envl = { version = "0.7.0", path = "./packages/envl-rs" }
-envl-vars = { version = "0.7.0", path = "./packages/envl-vars" }
-envl-config = { version = "0.7.0", path = "./packages/envl-config" }
-envl-utils = { version = "0.7.0", path = "./packages/envl-utils" }
+envl = { version = "0.8.0", path = "./packages/envl-rs" }
+envl-vars = { version = "0.8.0", path = "./packages/envl-vars" }
+envl-config = { version = "0.8.0", path = "./packages/envl-config" }
+envl-utils = { version = "0.8.0", path = "./packages/envl-utils" }
 
 [patch.crates-io]
 envl = { path = "packages/envl-rs" }

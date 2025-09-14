@@ -10,7 +10,7 @@ pub fn gen_array(
     name: String,
     t: Type,
     v: Vec<Value>,
-    structs: &mut Vec<String>,
+    structs: &mut Vec<TokenStream>,
 ) -> Result<TokenStream, Error> {
     let mut vec_values = Vec::new();
 

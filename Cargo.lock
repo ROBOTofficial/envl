@@ -154,7 +154,7 @@ checksum = "b05b61dc5112cbb17e4b6cd61790d9845d13888356391624cbe7e41efeac1e75"
 
 [[package]]
 name = "envl"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "envl-config",
  "envl-utils",
@@ -175,7 +175,7 @@ dependencies = [
 
 [[package]]
 name = "envl-config"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "envl-utils",
  "thiserror",
@@ -190,14 +190,14 @@ dependencies = [
 
 [[package]]
 name = "envl-utils"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "thiserror",
 ]
 
 [[package]]
 name = "envl-vars"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "envl-utils",
 ]
