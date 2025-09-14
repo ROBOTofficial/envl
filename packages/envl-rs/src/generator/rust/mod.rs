@@ -37,7 +37,7 @@ pub fn parse_v_type(v_name: String, v_type: Type, structs: &mut Vec<TokenStream>
                 .map(|(n, v)| {
                     let name = match v {
                         Type::Struct(_) => {
-                            format!("{}{}", n, struct_name)
+                            format!("{}{}", struct_name, n)
                         }
                         _ => n.to_string(),
                     };
