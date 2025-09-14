@@ -2,6 +2,12 @@
 
 This is an envl lib for Rust.
 
+## Install
+
+```console
+cargo add envl
+```
+
 ## Usage
 
 For more details, please see [here](../../tests/envl-rs-test).
