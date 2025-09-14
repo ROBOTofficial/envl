@@ -15,5 +15,6 @@ vars {
         x: int;
         y: bool;
         z: Array<string>;
-    }
+    },
+    f: Array<Array<bool>>
 }

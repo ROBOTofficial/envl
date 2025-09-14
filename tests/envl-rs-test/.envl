@@ -15,3 +15,7 @@ e = struct {
     y: false,
     z: ["hello", "world"],
 };
+f = [
+    [true],
+    [false]
+];
