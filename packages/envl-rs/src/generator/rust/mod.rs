@@ -19,7 +19,7 @@ pub fn struct_derive() -> TokenStream {
 pub fn parse_v_type(v_name: String, v_type: Type, structs: &mut Vec<TokenStream>) -> TokenStream {
     match v_type {
         Type::Array(boxed_element_type) => {
-            let value = parse_v_type(v_name, *boxed_element_type, structs);
+            let value = parse_v_type(format!("Array{}", v_name), *boxed_element_type, structs);
             quote! {
                 Vec<#value>
             }

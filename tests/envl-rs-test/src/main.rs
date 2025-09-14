@@ -11,7 +11,7 @@ pub fn main() {
 
 #[cfg(test)]
 mod test {
-    use crate::envl::{envl, StructStructev};
+    use crate::envl::{envl, StructArrayw, StructStructev};
 
     #[test]
     fn env_check() {
@@ -25,6 +25,12 @@ mod test {
         assert!(env.c);
         assert_eq!(env.d, vec![123, 456]);
         assert_eq!(env.e.v, v);
+        assert_eq!(
+            env.e.w,
+            vec![StructArrayw {
+                a: String::from("hi!")
+            }]
+        );
         assert_eq!(env.e.x, 111);
         assert!(!env.e.y);
         assert_eq!(env.e.z, vec!["hello".to_string(), "world".to_string()]);
