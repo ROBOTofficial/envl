@@ -6,6 +6,14 @@ vars {
     c: bool,
     d: Array<int>,
     e: struct {
-        a: int;
+        v: struct {
+            a: string;
+        };
+        w: Array<struct {
+            a: string;
+        }>;
+        x: int;
+        y: bool;
+        z: Array<string>;
     }
 }

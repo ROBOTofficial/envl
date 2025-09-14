@@ -1,6 +1,7 @@
 use std::{collections::HashMap, io::Error};
 
 use envl_config::misc::variable::{Type, Value};
+use envl_utils::case::camel_case_to_snake_case;
 use proc_macro2::TokenStream;
 use quote::quote;
 
@@ -13,14 +14,16 @@ pub fn gen_struct(
     structs: &mut Vec<TokenStream>,
 ) -> Result<TokenStream, Error> {
     let struct_type = format!("Struct{}", name).parse::<TokenStream>().unwrap();
-    let struct_name = format!("struct{}", name).parse::<TokenStream>().unwrap();
+    let struct_name = camel_case_to_snake_case(format!("struct{}", name).as_str())
+        .parse::<TokenStream>()
+        .unwrap();
     let mut struct_values = Vec::new();
 
     for (n, element_type) in t {
         if let Some(value) = v.get(&n) {
             let element_name = match value {
                 Value::Struct(_) => {
-                    format!("{}{}", n.to_owned(), struct_name)
+                    format!("{}{}", struct_type, n.to_owned())
                 }
                 _ => n.to_owned(),
             };
@@ -31,7 +34,7 @@ pub fn gen_struct(
                 structs,
             ) {
                 Ok(r) => {
-                    struct_values.push((element_name, r));
+                    struct_values.push((n.to_owned(), r));
                 }
                 Err(err) => {
                     return Err(err);

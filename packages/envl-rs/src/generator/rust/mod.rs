@@ -41,14 +41,14 @@ pub fn parse_v_type(v_name: String, v_type: Type, structs: &mut Vec<TokenStream>
                         }
                         _ => n.to_string(),
                     };
-                    let token_stream_name = name.parse::<TokenStream>().unwrap();
+                    let token_stream_name = n.parse::<TokenStream>().unwrap();
                     let v_type = parse_v_type(name.to_owned(), v.to_owned(), structs);
                     quote! {#token_stream_name: #v_type}
                 })
                 .collect::<Vec<_>>();
 
             structs.push(quote! {
-                #[derive(Debug, Clone)]
+                #[derive(Debug, Clone, PartialEq)]
                 #[rustfmt::skip]
                 pub struct #struct_name {
                     #(
@@ -130,7 +130,7 @@ pub fn generate_rust_file(data: VariableHashMap) -> Result<String, Error> {
 
         #(#structs)*
 
-        #[derive(Debug, Clone)]
+        #[derive(Debug, Clone, PartialEq)]
         #[rustfmt::skip]
         pub struct Env {
             #(

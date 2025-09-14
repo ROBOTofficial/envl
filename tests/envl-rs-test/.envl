@@ -3,5 +3,15 @@ b = 123;
 c = true;
 d = [123, 456];
 e = struct {
-    a: 111,
+    v: struct {
+        a: "hello world"
+    },
+    w: [
+        struct {
+            a: "hi!"
+        }
+    ],
+    x: 111,
+    y: false,
+    z: ["hello", "world"],
 };
