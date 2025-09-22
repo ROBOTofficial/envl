@@ -13,7 +13,7 @@ name = "envl"
 path = "src/cli.rs"
 
 [dependencies]
-clap = { version = "4.5.46", features = ["derive"] }
+clap = { version = "4.5.48", features = ["derive"] }
 envl.workspace = true
 
 [lints]
