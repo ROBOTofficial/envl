@@ -13,7 +13,7 @@ use envl_vars::{
 use std::{collections::HashMap, env::current_dir, path::PathBuf};
 
 use crate::{
-    generator::{generate_file, rust::value::gen_value},
+    generator::{generate_file, rust::var::value::gen_value},
     misc::{
         error::{
             convert_envl_lib_error, convert_envl_vars_error, convert_io_error, EnvlError,

@@ -5,7 +5,7 @@ use envl_utils::case::camel_case_to_snake_case;
 use proc_macro2::TokenStream;
 use quote::quote;
 
-use crate::generator::rust::value::gen_value;
+use crate::generator::rust::var::gen_value;
 
 pub fn gen_struct(
     name: String,
