@@ -17,8 +17,12 @@ edition = "2021"
 rust-version = "1.91.0"
 
 [workspace.dependencies]
+tokio = { version = "1.47.1", features = ["full"] }
 thiserror = { version = "2.0.16" }
 regex = { version = "1.11.3" }
+proc-macro2 = { version = "1.0.101" }
+quote = { version = "1.0.40" }
+syn = { version = "2.0.106", features = ["full", "extra-traits"] }
 envl = { version = "0.8.1", path = "./packages/envl-rs" }
 envl-vars = { version = "0.8.1", path = "./packages/envl-vars" }
 envl-config = { version = "0.8.1", path = "./packages/envl-config" }

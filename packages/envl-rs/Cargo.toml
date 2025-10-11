@@ -10,10 +10,10 @@ rust-version.workspace = true
 [lib]
 
 [dependencies]
-tokio = { version = "1.47.1", features = ["full"] }
+tokio.workspace = true
 envl-config.workspace = true
 envl-vars.workspace = true
 envl-utils.workspace = true
-proc-macro2 = { version = "1.0.101" }
-quote = { version = "1.0.40" }
-syn = { version = "2.0.106", features = ["full", "extra-traits"] }
+proc-macro2.workspace = true
+quote.workspace = true
+syn.workspace = true
