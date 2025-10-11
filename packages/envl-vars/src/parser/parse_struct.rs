@@ -160,7 +160,7 @@ impl Parser {
                     }
                     Value::Ident(v) => match element_name.clone() {
                         None => {
-                            if !is_valid_variable_name(&v) {
+                            if !is_valid_variable_name(v) {
                                 parser_error = Some(EnvlError {
                                     message: ErrorContext::InvalidName(v.to_string()),
                                     position: token.position.clone(),
