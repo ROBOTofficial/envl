@@ -1,6 +1,9 @@
 use std::{collections::HashMap, slice::Iter};
 
-use envl_utils::error::{EnvlError, ErrorContext};
+use envl_utils::{
+    error::{EnvlError, ErrorContext},
+    name::is_valid_variable_name,
+};
 
 use crate::{
     misc::{
@@ -96,6 +99,9 @@ impl Parser {
                     Value::Ident(v) => {
                         if element_name.is_some() {
                             error!(ErrorContext::InvalidElements);
+                        }
+                        if !is_valid_variable_name(v) {
+                            error!(ErrorContext::InvalidName(v.to_string()));
                         }
                         element_name = Some(v.clone());
                     }
