@@ -1,7 +1,7 @@
 use regex::RegexBuilder;
 
 pub fn is_valid_variable_name(name: &str) -> bool {
-    if let Ok(regex) = RegexBuilder::new(r"^[A-Za-z_]+$").build() {
+    if let Ok(regex) = RegexBuilder::new(r"^[A-Za-z0-9_]+$").build() {
         regex.is_match(name)
     } else {
         false
