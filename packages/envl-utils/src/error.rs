@@ -70,4 +70,7 @@ pub enum ErrorContext {
 
     #[error("Write within the block")]
     InBlock,
+
+    #[error("Invalid variable name {0}")]
+    InvalidName(String),
 }
