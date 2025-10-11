@@ -201,7 +201,10 @@ dependencies = [
 name = "envl-utils"
 version = "0.8.1"
 dependencies = [
+ "proc-macro2",
+ "quote",
  "regex",
+ "syn",
  "thiserror",
 ]
 
