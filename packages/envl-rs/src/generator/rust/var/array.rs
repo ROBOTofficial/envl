@@ -4,7 +4,7 @@ use envl_config::misc::variable::{Type, Value};
 use proc_macro2::TokenStream;
 use quote::quote;
 
-use crate::generator::rust::value::gen_value;
+use crate::generator::rust::var::gen_value;
 
 pub fn gen_array(
     name: String,
