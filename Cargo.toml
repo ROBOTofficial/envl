@@ -18,7 +18,7 @@ rust-version = "1.91.0"
 
 [workspace.dependencies]
 thiserror = { version = "2.0.16" }
-regex = { version = "1.11.3" }
+regex = { version = "1.12.2" }
 envl = { version = "0.8.1", path = "./packages/envl-rs" }
 envl-vars = { version = "0.8.1", path = "./packages/envl-vars" }
 envl-config = { version = "0.8.1", path = "./packages/envl-config" }
