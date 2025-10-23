@@ -84,7 +84,7 @@ macro_rules! pounded_var_with_context {
 
 #[macro_export]
 #[doc(hidden)]
-macro_rules! quote_bind_into_iter {
+macro_rules! bind_into_iter {
     ($has_iter:ident $var:ident) => {
         #[allow(unused_mut)]
         let (mut $var, i) = $var.quote_into_iter();
@@ -94,7 +94,7 @@ macro_rules! quote_bind_into_iter {
 
 #[macro_export]
 #[doc(hidden)]
-macro_rules! quote_bind_next_or_break {
+macro_rules! bind_next_or_break {
     ($var:ident) => {
         let $var = match $var.next() {
             Some(_x) => $crate::__private::RepInterp(_x),
@@ -141,11 +141,11 @@ macro_rules! token_with_context {
     ($tokens:ident $b3:tt $b2:tt $b1:tt (#) ( $($inner:tt)* ) * $a3:tt) => {{
         use $crate::__private::ext::*;
         let has_iter = $crate::__private::HasIterator::<false>;
-        $crate::pounded_var_names!{quote_bind_into_iter!(has_iter) () $($inner)*}
+        $crate::pounded_var_names!{bind_into_iter!(has_iter) () $($inner)*}
         <_ as $crate::__private::CheckHasIterator<true>>::check(has_iter);
 
         while true {
-            $crate::pounded_var_names!{quote_bind_next_or_break!() () $($inner)*}
+            $crate::pounded_var_names!{bind_next_or_break!() () $($inner)*}
             $crate::each_token!{$tokens $($inner)*}
         }
     }};
@@ -154,6 +154,20 @@ macro_rules! token_with_context {
     ($tokens:ident $b3:tt # ( $($inner:tt)* ) (*) $a1:tt $a2:tt $a3:tt) => {};
 
     ($tokens:ident $b3:tt $b2:tt $b1:tt (#) ( $($inner:tt)* ) $sep:tt *) => {{
+        use $crate::__private::ext::*;
+        let mut _i = 0usize;
+        let has_iter = $crate::__private::HasIterator::<false>;
+        $crate::pounded_var_names!{bind_into_iter!(has_iter) () $($inner)*}
+        <_ as $crate::__private::CheckHasIterator<true>>::check(has_iter);
+
+        while true {
+            $crate::pounded_var_names!{bind_next_or_break!() () $($inner)*}
+            if _i > 0 {
+                $crate::push_token!{$sep $tokens}
+            }
+            _i += 1;
+            $crate::each_token!{$tokens $($inner)*}
+        }
     }};
 
     ($tokens:ident $b3:tt $b2:tt # (( $($inner:tt)* )) $sep:tt * $a3:tt) => {};
