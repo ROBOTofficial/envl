@@ -20,7 +20,7 @@ rust-version = "1.91.0"
 [workspace.dependencies]
 clap = { version = "4.5.46", features = ["derive"] }
 tokio = { version = "1.47.1", features = ["full"] }
-thiserror = { version = "2.0.16" }
+thiserror = { version = "2.0.17" }
 regex = { version = "1.11.3" }
 proc-macro2 = { version = "1.0.101" }
 quote = { version = "1.0.41" }
