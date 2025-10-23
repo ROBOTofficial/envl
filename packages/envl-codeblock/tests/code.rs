@@ -36,4 +36,23 @@ mod test {
 
         assert_eq!(code.to_string(), "const fuga = 123 ;");
     }
+
+    #[test]
+    fn iter_test() {
+        let values = vec![
+            code_block! {
+                hoge: 123
+            },
+            code_block! {
+                huga: 456
+            },
+        ];
+        let code = code_block! {
+            struct Foo {
+                #(#values),*
+            }
+        };
+
+        assert_eq!(code.to_string(), "struct Foo { hoge : 123 , huga : 456 }");
+    }
 }
