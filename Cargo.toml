@@ -11,7 +11,7 @@ members = [
 ]
 
 [workspace.package]
-version = "0.8.1"
+version = "0.9.0"
 repository = "https://github.com/ROBOTofficial/envl"
 license = "MIT"
 edition = "2021"
@@ -25,10 +25,11 @@ regex = { version = "1.11.3" }
 proc-macro2 = { version = "1.0.101" }
 quote = { version = "1.0.41" }
 syn = { version = "2.0.106", features = ["full", "extra-traits"] }
-envl = { version = "0.8.1", path = "./packages/envl-rs" }
-envl-vars = { version = "0.8.1", path = "./packages/envl-vars" }
-envl-config = { version = "0.8.1", path = "./packages/envl-config" }
-envl-utils = { version = "0.8.1", path = "./packages/envl-utils" }
+envl = { version = "0.9.0", path = "./packages/envl-rs" }
+envl-vars = { version = "0.9.0", path = "./packages/envl-vars" }
+envl-config = { version = "0.9.0", path = "./packages/envl-config" }
+envl-codeblock = { version = "0.9.0", path = "./packages/envl-codeblock" }
+envl-utils = { version = "0.9.0", path = "./packages/envl-utils" }
 
 [patch.crates-io]
 envl = { path = "packages/envl-rs" }
