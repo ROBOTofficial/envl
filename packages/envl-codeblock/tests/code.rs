@@ -24,4 +24,16 @@ mod test {
             "export function a () { console . log (\"Hello World!!\") ; }"
         );
     }
+
+    #[test]
+    fn interpolation_test() {
+        let value = code_block! {
+            123
+        };
+        let code = code_block! {
+            const fuga = #value;
+        };
+
+        assert_eq!(code.to_string(), "const fuga = 123 ;");
+    }
 }
