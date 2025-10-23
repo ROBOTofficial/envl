@@ -1,5 +1,6 @@
 [package]
 name = "envl-codeblock"
+description = "code block for envl"
 version.workspace = true
 repository.workspace = true
 license.workspace = true
