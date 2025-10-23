@@ -163,7 +163,7 @@ checksum = "b05b61dc5112cbb17e4b6cd61790d9845d13888356391624cbe7e41efeac1e75"
 
 [[package]]
 name = "envl"
-version = "0.8.1"
+version = "0.9.0"
 dependencies = [
  "envl-config",
  "envl-utils",
@@ -183,8 +183,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "envl-codeblock"
+version = "0.9.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+ "thiserror",
+]
+
+[[package]]
 name = "envl-config"
-version = "0.8.1"
+version = "0.9.0"
 dependencies = [
  "envl-utils",
  "thiserror",
@@ -199,7 +209,7 @@ dependencies = [
 
 [[package]]
 name = "envl-utils"
-version = "0.8.1"
+version = "0.9.0"
 dependencies = [
  "regex",
  "thiserror",
@@ -207,7 +217,7 @@ dependencies = [
 
 [[package]]
 name = "envl-vars"
-version = "0.8.1"
+version = "0.9.0"
 dependencies = [
  "envl-utils",
 ]
@@ -338,9 +348,9 @@ dependencies = [
 
 [[package]]
 name = "quote"
-version = "1.0.40"
+version = "1.0.41"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1885c039570dc00dcb4ff087a89e185fd56bae234ddc7f056a945bf36467248d"
+checksum = "ce25767e7b499d1b604768e7cde645d14cc8584231ea6b295e9c9eb22c02e1d1"
 dependencies = [
  "proc-macro2",
 ]

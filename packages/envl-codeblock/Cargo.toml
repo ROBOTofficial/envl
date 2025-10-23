@@ -1,7 +1,6 @@
 [package]
-name = "envl"
+name = "envl-codeblock"
 version.workspace = true
-description = "load .envl and .envlconf"
 repository.workspace = true
 license.workspace = true
 edition.workspace = true
@@ -10,10 +9,10 @@ rust-version.workspace = true
 [lib]
 
 [dependencies]
-tokio.workspace = true
-envl-config.workspace = true
-envl-vars.workspace = true
-envl-utils.workspace = true
+thiserror.workspace = true
 proc-macro2.workspace = true
 quote.workspace = true
 syn.workspace = true
+
+[lints]
+workspace = true
