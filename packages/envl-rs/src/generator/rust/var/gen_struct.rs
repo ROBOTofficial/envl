@@ -1,7 +1,7 @@
 use std::{collections::HashMap, io::Error};
 
 use envl_config::misc::variable::{Type, Value};
-use envl_utils::case::camel_case_to_snake_case;
+use envl_utils::case::to_snake_case;
 use proc_macro2::TokenStream;
 use quote::quote;
 
@@ -14,7 +14,7 @@ pub fn gen_struct(
     structs: &mut Vec<TokenStream>,
 ) -> Result<TokenStream, Error> {
     let struct_type = format!("Struct{}", name).parse::<TokenStream>().unwrap();
-    let struct_name = camel_case_to_snake_case(format!("struct{}", name).as_str())
+    let struct_name = to_snake_case(format!("struct{}", name).as_str())
         .parse::<TokenStream>()
         .unwrap();
     let mut struct_values = Vec::new();

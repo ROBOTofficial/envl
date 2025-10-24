@@ -1,4 +1,4 @@
-pub fn camel_case_to_snake_case(txt: &str) -> String {
+pub fn to_snake_case(txt: &str) -> String {
     let mut result = String::new();
 
     for (i, c) in txt.char_indices() {
@@ -19,13 +19,10 @@ pub fn camel_case_to_snake_case(txt: &str) -> String {
 
 #[cfg(test)]
 mod test {
-    use crate::case::camel_case_to_snake_case;
+    use crate::case::to_snake_case;
 
     #[test]
     fn convert_test() {
-        assert_eq!(
-            camel_case_to_snake_case("thisIsATest"),
-            "this_is_a_test".to_string()
-        );
+        assert_eq!(to_snake_case("thisIsATest"), "this_is_a_test".to_string());
     }
 }
