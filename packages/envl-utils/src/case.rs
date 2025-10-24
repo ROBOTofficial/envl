@@ -17,12 +17,35 @@ pub fn to_snake_case(txt: &str) -> String {
     result
 }
 
+pub fn to_camel_case(txt: &str) -> String {
+    let mut result = String::new();
+    let mut is_target = false;
+
+    for c in txt.chars() {
+        if c == '_' {
+            is_target = true;
+        } else if is_target {
+            result.push_str(&c.to_uppercase().to_string());
+            is_target = false;
+        } else {
+            result.push(c);
+        }
+    }
+
+    result
+}
+
 #[cfg(test)]
 mod test {
-    use crate::case::to_snake_case;
+    use crate::case::{to_camel_case, to_snake_case};
 
     #[test]
-    fn convert_test() {
-        assert_eq!(to_snake_case("thisIsATest"), "this_is_a_test".to_string());
+    fn snake_case_convert_test() {
+        assert_eq!(to_snake_case("thisIsATest"), "this_is_a_test");
+    }
+
+    #[test]
+    fn camel_case_convert_test() {
+        assert_eq!(to_camel_case("this_is_a_test"), "thisIsATest");
     }
 }
