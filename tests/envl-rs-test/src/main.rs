@@ -35,5 +35,8 @@ mod test {
         assert!(!env.e.y);
         assert_eq!(env.e.z, vec!["hello".to_string(), "world".to_string()]);
         assert_eq!(env.f, vec![vec![true], vec![false]]);
+        assert_eq!(env.g, 123);
+        assert_eq!(env.h, Some(123));
+        assert_eq!(env.i, None);
     }
 }
