@@ -37,6 +37,7 @@ f = [
     [true],
     [false]
 ];
+h = 123;
 ```
 
 **.envlconf**
@@ -59,6 +60,11 @@ vars {
         y: bool;
         z: Array<string>;
     },
-    f: Array<Array<bool>>
+    f: Array<Array<bool>>,
+    g: int (
+        default: 123
+    ),
+    h: Option<int>,
+    i: Option<string>
 }
 ```
