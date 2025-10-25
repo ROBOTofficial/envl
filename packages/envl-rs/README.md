@@ -68,10 +68,10 @@ f = [
 build = "build.rs"
 
 [dependencies]
-envl = { version = "0.9.0" }
+envl = { version = "0.9.1" }
 
 [build-dependencies]
-envl = { version = "0.9.0" }
+envl = { version = "0.9.1" }
 ```
 
 **build.rs**
