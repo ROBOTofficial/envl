@@ -47,7 +47,7 @@ pub fn gen_value(
 
     match result {
         Ok(token) => match t.clone() {
-            Type::Option(_) => Ok(quote! {
+            Type::Option(_) if &v != &Value::Null => Ok(quote! {
                 Some(#token)
             }),
             _ => Ok(token.to_owned()),
