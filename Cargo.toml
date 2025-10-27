@@ -1,5 +1,5 @@
 [workspace]
-resolver = "3"
+resolver = "2"
 members = [
     "packages/envl-utils",
     "packages/envl-codeblock",
@@ -11,11 +11,11 @@ members = [
 ]
 
 [workspace.package]
-version = "0.9.1"
+version = "0.10.0"
 repository = "https://github.com/ROBOTofficial/envl"
 license = "MIT"
 edition = "2021"
-rust-version = "1.91.0"
+rust-version = "1.74" # MSRV
 
 [workspace.dependencies]
 clap = { version = "4.5.50", features = ["derive"] }
@@ -25,11 +25,11 @@ regex = { version = "1.11.3" }
 proc-macro2 = { version = "1.0.101" }
 quote = { version = "1.0.41" }
 syn = { version = "2.0.108", features = ["full", "extra-traits"] }
-envl = { version = "0.9.1", path = "./packages/envl-rs" }
-envl-vars = { version = "0.9.1", path = "./packages/envl-vars" }
-envl-config = { version = "0.9.1", path = "./packages/envl-config" }
-envl-codeblock = { version = "0.9.1", path = "./packages/envl-codeblock" }
-envl-utils = { version = "0.9.1", path = "./packages/envl-utils" }
+envl = { version = "0.10.0", path = "./packages/envl-rs" }
+envl-vars = { version = "0.10.0", path = "./packages/envl-vars" }
+envl-config = { version = "0.10.0", path = "./packages/envl-config" }
+envl-codeblock = { version = "0.10.0", path = "./packages/envl-codeblock" }
+envl-utils = { version = "0.10.0", path = "./packages/envl-utils" }
 
 [patch.crates-io]
 envl = { path = "packages/envl-rs" }
