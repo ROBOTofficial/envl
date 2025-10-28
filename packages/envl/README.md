@@ -12,6 +12,12 @@ cargo add envl
 
 For more details, please see [here](../../tests/envl-rs-test).
 
+**Install**
+```
+cargo add envl
+cargo add envl --build
+```
+
 **.envlconf**
 ```rs
 settings {}
@@ -66,12 +72,6 @@ f = [
 [package]
 ...
 build = "build.rs"
-
-[dependencies]
-envl = { version = "0.9.1" }
-
-[build-dependencies]
-envl = { version = "0.9.1" }
 ```
 
 **build.rs**
