@@ -5,7 +5,7 @@ members = [
     "packages/envl-codeblock",
     "packages/envl-config",
     "packages/envl-vars",
-    "packages/envl-rs",
+    "packages/envl",
     "packages/envl-cli",
     "tests/envl-rs-test"
 ]
@@ -25,14 +25,14 @@ regex = { version = "1.11.3" }
 proc-macro2 = { version = "1.0.101" }
 quote = { version = "1.0.41" }
 syn = { version = "2.0.108", features = ["full", "extra-traits"] }
-envl = { version = "0.10.0", path = "./packages/envl-rs" }
+envl = { version = "0.10.0", path = "./packages/envl" }
 envl-vars = { version = "0.10.0", path = "./packages/envl-vars" }
 envl-config = { version = "0.10.0", path = "./packages/envl-config" }
 envl-codeblock = { version = "0.10.0", path = "./packages/envl-codeblock" }
 envl-utils = { version = "0.10.0", path = "./packages/envl-utils" }
 
 [patch.crates-io]
-envl = { path = "packages/envl-rs" }
+envl = { path = "packages/envl" }
 envl-cli = { path = "packages/envl-cli" }
 envl-vars = { path = "packages/envl-vars" }
 envl-config = { path = "packages/envl-config" }
