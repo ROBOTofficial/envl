@@ -1,0 +1,19 @@
+{
+    "name": "Envl",
+    "build": {
+        "dockerfile": "../docker/DOCKERFILE"
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "docker.docker",
+                "dustypomerleau.rust-syntax",
+                "github.vscode-github-actions",
+                "ms-azuretools.vscode-docker",
+                "ms-vscode.vscode-typescript-next",
+                "rust-lang.rust-analyzer",
+                "vadimcn.vscode-lldb"
+            ]
+        }
+    }
+}

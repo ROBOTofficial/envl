@@ -1,0 +1,14 @@
+FROM rust:latest as rust
+
+USER root
+
+RUN rustup component add clippy rustfmt
+
+FROM ubuntu:latest as base
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+    git \
+    nodejs \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
